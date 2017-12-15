@@ -17,6 +17,9 @@
 I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
+H = [cosd(45) -sind(45) 0; ...
+    sind(45) cosd(45) 0; ...
+    0 0 1];
 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
