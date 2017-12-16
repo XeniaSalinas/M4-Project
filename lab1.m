@@ -28,20 +28,37 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %% 1.2. Affinities
 
 % ToDo: generate a matrix H which produces an affine transformation
+H = [0.1 -0.8 3; ...
+    0.7 0.3 4; ...
+    0 0 1];
 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
 % ToDo: decompose the affinity in four transformations: two
 % rotations, a scale, and a translation
+[U,D,V] = svd(H(1:2,1:2));
+R_theta = U * transpose(V);
+R_phi = transpose(V);
+S = D(1:2,1:2);
+T = H(1:2,3);
 
 % ToDo: verify that the product of the four previous transformations
 % produces the same matrix H as above
+A2 = R_theta * transpose(R_phi) * S * R_phi;
+H2 = [A2 T; 0 0 1];
+t1 = isequal(H,H2) 
 
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
+I3 = apply_H(I, [zeros(2,2) T; 0 0 1]);
+I3 = apply_H(I,[R_phi [0; 0]; 0 0 1]);
+I3 = apply_H(I3,[S [0; 0]; 0 0 1]);
+I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
+I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1]);
+t2 = isequal(I2,I3)
 
-
+figure; imshow(uint8(I2)); 
 
 %% 1.3 Projective transformations (homographies)
 
