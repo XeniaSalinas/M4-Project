@@ -47,7 +47,8 @@ T = H(1:2,3);
 % produces the same matrix H as above
 A2 = R_theta * transpose(R_phi) * S * R_phi;
 H2 = [A2 T; 0 0 1];
-t1 = isequal(H,H2) 
+t1 = isequal(H,H2)
+t1 = sum(sum((H-H2)))
 
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
@@ -57,6 +58,7 @@ I3 = apply_H(I3,[S [0; 0]; 0 0 1]);
 I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
 I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1]);
 t2 = isequal(I2,I3)
+t2 = sum(sum((I2-I3)))
 
 figure; imshow(uint8(I2)); 
 
@@ -90,35 +92,63 @@ p7 = [A(i,1) A(i,2) 1]';
 p8 = [A(i,3) A(i,4) 1]';
 
 % ToDo: compute the lines l1, l2, l3, l4, that pass through the different pairs of points
-
+l1 = cross(p1, p2);
+l2 = cross(p3, p4);
+l3 = cross(p5,p6);
+l4 = cross(p7, p8);
 
 % show the chosen lines in the image
 figure;imshow(I);
 hold on;
 t=1:0.1:1000;
 plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
-plot(t, -(l2(1)*t + l2(3)) / l2(2), 'y');
-plot(t, -(l3(1)*t + l3(3)) / l3(2), 'y');
-plot(t, -(l4(1)*t + l4(3)) / l4(2), 'y');
+plot(t, -(l2(1)*t + l2(3)) / l2(2), 'g');
+plot(t, -(l3(1)*t + l3(3)) / l3(2), 'b');
+plot(t, -(l4(1)*t + l4(3)) / l4(2), 'r');
 
 % ToDo: compute the homography that affinely rectifies the image
-
+%%
 I2 = apply_H(I, H);
-figure; imshow(uint8(I2));
+%figure; imshow(uint8(I2));
 
-% ToDo: compute the transformed lines lr1, lr2, lr3, lr4
+% ToDo: compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
+lr1 = inv(H).' * l1;
+lr2 = inv(H).' * l2;
+lr3 = inv(H).' * l3;
+lr4 = inv(H).' * l4;
 
 % show the transformed lines in the transformed image
 figure;imshow(uint8(I2));
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
-plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'y');
-plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'y');
-plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'y');
+plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'g');
+plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'b');
+plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'r');
 
 % ToDo: to evaluate the results, compute the angle between the different pair 
 % of lines before and after the image transformation
+% l1_2 = [l1(1)/l1(3), l1(2)/l1(3)];
+% l2_2 = [l2(1)/l2(3), l2(2)/l2(3)];
+% l3_2 = [l3(1)/l3(3), l3(2)/l3(3)];
+% l4_2 = [l4(1)/l4(3), l4(2)/l4(3)];
+% 
+% lr1_2 = [lr1(1)/lr1(3), lr1(2)/lr1(3)];
+% lr2_2 = [lr2(1)/lr2(3), lr2(2)/lr2(3)];
+% lr3_2 = [lr3(1)/lr3(3), lr3(2)/lr3(3)];
+% lr4_2 = [lr4(1)/lr4(3), lr4(2)/lr4(3)];
+% 
+% a1 = mod(atan2( det([l1_2;l2_2;]) , dot(l1_2,l2_2) ), 2*pi );
+% angleout = abs((a1>pi/2)*pi-a1);
+% a1_transf = mod(atan2( det([lr1_2;lr2_2;]) , dot(lr1_2,lr2_2) ), 2*pi );
+% angleout_transf = abs((a1_transf>pi/2)*pi-a1_transf);
+% angle_dif = (angleout - angleout_transf) * 180/pi
+% 
+% a2 = mod(atan2( det([l4_2;l3_2;]) , dot(l4_2,l3_2) ), 2*pi );
+% angleout = abs((a2>pi/2)*pi-a1);
+% a2_transf = mod(atan2( det([lr4_2;lr3_2;]) , dot(lr4_2,lr3_2) ), 2*pi );
+% angleout_transf = abs((a2_transf>pi/2)*pi-a2_transf);
+% angle_dif = (angleout - angleout_transf) * 180/pi
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
