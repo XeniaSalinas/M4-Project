@@ -17,9 +17,11 @@
 I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
-s = 1.5;  % scale factor
-H = [-s*cosd(45) -s*sind(45) 3; ...
-    -s*sind(45) s*cosd(45) 4; ...
+s = 1;                  % scale factor
+angle = 20;             % rotation angle
+translation = [-1, 4];   % translation 
+H = [s*cosd(angle) -s*sind(angle) translation(1); ...
+    s*sind(angle) s*cosd(angle) translation(2); ...
     0 0 1];
 
 I2 = apply_H(I, H);
