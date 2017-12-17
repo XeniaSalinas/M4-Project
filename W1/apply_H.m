@@ -42,7 +42,6 @@ x2_aux_2(:,:,2) = zeros(n2,m2);
 for i = 1:n2
     for j = 1:m2
         x2_e = [i; j] + [origin_n; origin_m];
-<<<<<<< HEAD
         x2_p = H\[x2_e;1]; %A\b for inv(a)*b  
         x_e = [x2_p(1)/x2_p(3), x2_p(2)/x2_p(3)];
         % If the transformed point is inside the source image, save the
@@ -51,18 +50,10 @@ for i = 1:n2
             indices(i,j) = 1;
             x2_aux_1(i,j) = x_e(1);
             x2_aux_2(i,j) = x_e(2);
-=======
-        x2_p = H\[x2_e;1]; %A\b for inv(a)*b
-        x_e = [x2_p(1)/x2_p(3), x2_p(2)/x2_p(3)]; 
-        if (x_e(1) > 1 && x_e(2) > 1 && x_e(1) < n && x_e(2) < m)
-            Xq(i,j) = x_e(1);
-            Yq(i,j) = x_e(2);
->>>>>>> origin/master
         end
     end
 end
 
-<<<<<<< HEAD
 % Initialize interpolated image
 I_interp = zeros(numel(I2(:,:,1)),3);
 
@@ -76,12 +67,6 @@ I_interp(indices>0,3) = interp2(X,Y, double(I(:,:,3)),x2_aux_2(indices>0),x2_aux
 
 % Reshape the interpolated image
 I2 = reshape(I_interp,n2,m2,3);
-=======
-for k = 1:c
-    I2(:,:,k) = interp2(single(I(:,:,k)), Xq, Yq);
-end
-I2(isnan(I2)) = 0;
->>>>>>> origin/master
 
 end
 
