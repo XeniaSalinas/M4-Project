@@ -1,5 +1,11 @@
-function I2 = apply_H(I, H)
+function I2 = apply_H(I, H, crop_image)
 %APPLY_H Transform the input image with the given homography
+
+if nargin > 2
+  bool_crop = crop_image;
+else
+  bool_crop = 0;
+end
 
 %% Compute the size of the transformed image
 [n,m,c] = size(I);
@@ -67,6 +73,15 @@ I_interp(indices>0,3) = interp2(X,Y, double(I(:,:,3)),x2_aux_2(indices>0),x2_aux
 
 % Reshape the interpolated image
 I2 = reshape(I_interp,n2,m2,3);
+
+if bool_crop
+    % Crop the output image to the region of interest
+    [i1,i2] = find(~isnan(I2(:,:,1)));
+    rows = [min(i1) max(i1)];
+    cols = [min(i2) max(i2)];
+    I2 = I2(rows(1):rows(2),cols(1):cols(2),:);
+    I2(isnan(I2))=0;
+end
 
 end
 
