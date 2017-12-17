@@ -1,3 +1,4 @@
+close all, clear
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Lab 1: Image rectification
 
@@ -24,7 +25,7 @@ H = [s*cosd(angle) -s*sind(angle) t(1); ...
     s*sind(angle) s*cosd(angle) t(2); ...
     0 0 1];
 
-I2 = apply_H(I, H);
+I2 = apply_H_interp(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
 
@@ -57,15 +58,20 @@ end
 
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
-I3 = apply_H(I, [zeros(2,2) T; 0 0 1]);
+% I3 = apply_H(I, [zeros(2,2) T; 0 0 1]);
 I3 = apply_H(I,[R_phi [0; 0]; 0 0 1]);
 I3 = apply_H(I3,[S [0; 0]; 0 0 1]);
 I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
-I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1]);
+%Crop the last tranformation
+I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1],1);
+%Resize the transformation because the image sizes mismatch
+I3 = imresize(I3,[ size(I2,1)  size(I2,2)],'bilinear');
+% figure; imshow(uint8(I3));
 t2 = isequal(I2,I3)
 t2 = sum(sum((I2-I3)))
 
-figure; imshow(uint8(I2)); 
+%Show the error
+figure; imshow(uint8(I2-I3)); 
 
 %% 1.3 Projective transformations (homographies)
 
