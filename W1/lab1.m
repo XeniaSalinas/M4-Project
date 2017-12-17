@@ -5,7 +5,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. Applying image transformations
 
-% ToDo: create the function  "apply_H" that gets as input a homography and
+% Create the function  "apply_H" that gets as input a homography and
 % an image and returns the image transformed by the homography.
 % The size of the transformed image has to be automatically set so as to 
 % contain the whole transformed image.
@@ -16,12 +16,12 @@
 %% 1.1. Similarities
 I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
-% ToDo: generate a matrix H which produces a similarity transformation
-s = 0.2;                  % scale factor
-angle = 70;             % rotation angle
-translation = [-1, 4];   % translation 
-H = [s*cosd(angle) -s*sind(angle) translation(1); ...
-    s*sind(angle) s*cosd(angle) translation(2); ...
+% Generate a matrix H which produces a similarity transformation
+s = 0.8;                  % scale factor
+angle = 30;               % rotation angle
+t = [-1, 4];              % translation 
+H = [s*cosd(angle) -s*sind(angle) t(1); ...
+    s*sind(angle) s*cosd(angle) t(2); ...
     0 0 1];
 
 I2 = apply_H(I, H);
@@ -30,28 +30,30 @@ figure; imshow(I); figure; imshow(uint8(I2));
 
 %% 1.2. Affinities
 
-% ToDo: generate a matrix H which produces an affine transformation
-H = [0.1 -0.8 3; ...
-    0.7 0.3 4; ...
-    0 0 1];
+% Generate a matrix H which produces an affine transformation
+A = [0.6 0.1;
+     0.5 0.8];
+t = [3; -4];
+H = [A t; 0 0 1];
 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
-% ToDo: decompose the affinity in four transformations: two
+% Decompose the affinity in four transformations: two
 % rotations, a scale, and a translation
-[U,D,V] = svd(H(1:2,1:2));
+[U,D,V] = svd(A);
 R_theta = U * transpose(V);
 R_phi = transpose(V);
 S = D(1:2,1:2);
-T = H(1:2,3);
 
-% ToDo: verify that the product of the four previous transformations
+% Verify that the product of the four previous transformations
 % produces the same matrix H as above
+tolerance = 1e-12;
 A2 = R_theta * transpose(R_phi) * S * R_phi;
-H2 = [A2 T; 0 0 1];
-t1 = isequal(H,H2)
-t1 = sum(sum((H-H2)))
+H2 = [A2 t; 0 0 1];
+if abs(sum(sum(H - H2))) > tolerance
+    error('H is no equal to its decomposition');
+end
 
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
@@ -67,8 +69,12 @@ figure; imshow(uint8(I2));
 
 %% 1.3 Projective transformations (homographies)
 
-% ToDo: generate a matrix H which produces a projective transformation
-
+% Generate a matrix H which produces a projective transformation
+A = [0.9 0.12;
+     0.05 1.1];
+t = [3; -4];
+v = [0.0005 0.001];
+H = [A t; v 1];
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
@@ -94,7 +100,7 @@ i = 565;
 p7 = [A(i,1) A(i,2) 1]';
 p8 = [A(i,3) A(i,4) 1]';
 
-% ToDo: compute the lines l1, l2, l3, l4, that pass through the different pairs of points
+% Compute the lines l1, l2, l3, l4, that pass through the different pairs of points
 l1 = cross(p1, p2);
 l2 = cross(p3, p4);
 l3 = cross(p5,p6);
