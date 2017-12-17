@@ -13,10 +13,9 @@ close all, clear
 % At some point you will need to interpolate the image values at some points,
 % you may use the Matlab function "interp2" for that.
 
-
-%% 1.1. Similarities
 I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
+%% 1.1. Similarities
 % Generate a matrix H which produces a similarity transformation
 s = 0.8;                  % scale factor
 angle = 30;               % rotation angle
