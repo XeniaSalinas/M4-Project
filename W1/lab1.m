@@ -145,11 +145,11 @@ I_affine = apply_H(I, affine_rect_H);
 figure; imshow(uint8(I_affine));
 
 % Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
-metric_rect_H_lines = transpose(inv(affine_rect_H));
-lr1 = metric_rect_H_lines * l1;
-lr2 = metric_rect_H_lines * l2;
-lr3 = metric_rect_H_lines * l3;
-lr4 = metric_rect_H_lines * l4;
+affine_rect_H_lines = transpose(inv(affine_rect_H));
+lr1 = affine_rect_H_lines * l1;
+lr2 = affine_rect_H_lines * l2;
+lr3 = affine_rect_H_lines * l3;
+lr4 = affine_rect_H_lines * l4;
 
 % show the transformed lines in the transformed image
 figure;imshow(uint8(I_affine));
@@ -292,11 +292,11 @@ I_affine = apply_H(I, affine_rect_H);
 figure; imshow(uint8(I_affine));
 
 % Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
-metric_rect_H_lines = transpose(inv(affine_rect_H));
-lr1 = metric_rect_H_lines * l1;
-lr2 = metric_rect_H_lines * l2;
-lr3 = metric_rect_H_lines * l3;
-lr4 = metric_rect_H_lines * l4;
+affine_rect_H_lines = transpose(inv(affine_rect_H));
+lr1 = affine_rect_H_lines * l1;
+lr2 = affine_rect_H_lines * l2;
+lr3 = affine_rect_H_lines * l3;
+lr4 = affine_rect_H_lines * l4;
 
 % show the transformed lines in the transformed image
 figure;imshow(uint8(I_affine));
