@@ -62,15 +62,19 @@ I3 = apply_H(I,[R_phi [0; 0]; 0 0 1]);
 I3 = apply_H(I3,[S [0; 0]; 0 0 1]);
 I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
 %Crop the last tranformation
-I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1],1);
+I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1]);
 %Resize the transformation because the image sizes mismatch
-I3 = imresize(I3,[ size(I2,1)  size(I2,2)],'bilinear');
-% figure; imshow(uint8(I3));
-t2 = isequal(I2,I3)
-t2 = sum(sum((I2-I3)))
+% I3 = imresize(I3,[ size(I2,1)  size(I2,2)],'bilinear');
+% % figure; imshow(uint8(I3));
+% t2 = isequal(I2,I3)
+% t2 = sum(sum((I2-I3)))
 
 %Show the error
-figure; imshow(uint8(I2-I3)); 
+% figure; imshow(uint8(I2-I3)); 
+
+if abs(sum(sum(I2 - I3))) > tolerance
+    error('I3 is no equal to I2');
+end
 
 %% 1.3 Projective transformations (homographies)
 

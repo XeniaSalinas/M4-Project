@@ -1,19 +1,40 @@
-function I2 = apply_H(I, H, crop_image)
+function I2 = apply_H(I, H)
 %APPLY_H Transform the input image with the given homography
-
-if nargin > 2
-  bool_crop = crop_image;
-else
-  bool_crop = 0;
-end
 
 %% Compute the size of the transformed image
 [n,m,c] = size(I);
+
+img_mask = (I(:,:,1)==0 & I(:,:,2)==0 & I(:,:,3)==0);
+
+cor = corner(img_mask); % The default method used is Harris 
+% figure; imshow(I);
+% hold on;
+% plot(cor(:,1),cor(:,2),'r*');
+% hold off;
+
+%Cartesiona coordinates of the image corners
+if isempty(cor)
+    lu_c = [1;1];
+    ru_c = [1;m];
+    ld_c = [n;1];
+    rd_c = [n;m];
+else
+    [~,min_n_idx] = min(cor(:,1));
+    [~,min_m_idx] = min(cor(:,2));
+    [~,max_n_idx] = max(cor(:,1));
+    [~,max_m_idx] = max(cor(:,2));
+    
+    lu_c = transpose(cor(min_n_idx,:));
+    ru_c = transpose(cor(min_m_idx,:));
+    ld_c = transpose(cor(max_n_idx,:));
+    rd_c = transpose(cor(max_m_idx,:));
+end
+
 % Homogeneous coordinates of the corners
-lu_p = [1;1;1];  % Left-up
-ru_p = [1;m;1];  % Right-up
-ld_p = [n;1;1];  % Left-down
-rd_p = [n;m;1];  % Right down
+lu_p = [lu_c;1];  % Left-up
+ru_p = [ru_c;1];  % Right-up
+ld_p = [ld_c;1];  % Left-down
+rd_p = [rd_c;1];  % Right down
 % Homogeneous coordinates of the transformed image's corners
 lu2_p = H * lu_p;  % Left-up 
 ru2_p = H * ru_p;  % Right-up
@@ -29,8 +50,8 @@ n2 = ceil(abs(max([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]) - min([lu2_c(1), ru2
 m2 = ceil(abs(max([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]) - min([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]))) + 1;
 
 %% Compute the position rectification vector
-origin_n = min([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]);
-origin_m = min([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]);
+origin_n = round(min([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]));
+origin_m = round(min([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]));
 
 %% Compute the homography transformation
 % Query points in X and Y axis for interpolation. By default we set the
@@ -48,7 +69,7 @@ x2_aux_2(:,:,2) = zeros(n2,m2);
 for i = 1:n2
     for j = 1:m2
         x2_e = [i; j] + [origin_n; origin_m];
-        x2_p = H\[x2_e;1]; %A\b for inv(a)*b  
+        x2_p = H\[x2_e; 1]; %A\b for inv(a)*b  
         x_e = [x2_p(1)/x2_p(3), x2_p(2)/x2_p(3)];
         % If the transformed point is inside the source image, save the
         % point coordinates
@@ -74,14 +95,7 @@ I_interp(indices>0,3) = interp2(X,Y, double(I(:,:,3)),x2_aux_2(indices>0),x2_aux
 % Reshape the interpolated image
 I2 = reshape(I_interp,n2,m2,3);
 
-if bool_crop
-    % Crop the output image to the region of interest
-    [i1,i2] = find(~isnan(I2(:,:,1)));
-    rows = [min(i1) max(i1)];
-    cols = [min(i2) max(i2)];
-    I2 = I2(rows(1):rows(2),cols(1):cols(2),:);
-    I2(isnan(I2))=0;
-end
+figure; imshow(uint8(I2));
 
 end
 
