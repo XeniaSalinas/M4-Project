@@ -17,7 +17,7 @@ I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
 %% 1.1. Similarities
 % Generate a matrix H which produces a similarity transformation
-s = 0.8;                  % scale factor
+s = 1;                  % scale factor
 angle = 30;               % rotation angle
 t = [-1, 4];              % translation 
 H = [s*cosd(angle) -s*sind(angle) t(1); ...
@@ -31,14 +31,15 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %% 1.2. Affinities
 
 % Generate a matrix H which produces an affine transformation
-A = [0.6 0.1;
-     0.5 0.8];
-T = [3; -4];
+A = [1 1;
+     0 1];
+T = [20; 30];
 H = [A T; 0 0 1];
 
 I2 = apply_H(I, H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
+%% 1.2.1 Affinity decomposition
 % Decompose the affinity in four transformations: two
 % rotations, a scale, and a translation
 [U,D,V] = svd(A);
