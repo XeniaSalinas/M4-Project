@@ -196,6 +196,27 @@ angle_dif = (angleout - angleout_transf) * 180/pi
 %       Compute also the angles between the pair of lines before and after
 %       rectification.
 
+%Choose two orthogonal lines
+l = lr1;
+m = lr3;
+
+% Solve the system of equation provided by the orthogonal lines
+A = [l(1)*m(1) l(1)*m(2)+l(1)*m(2)];
+B = - l(2)*m(2);
+s = linsolve(A,B);
+S = [s(1) s(2); s(2) 1];
+
+% Decompose the S matrix
+[U,D,V] = svd(S);
+A = U*sqrt(D(1:2,1:2))*transpose(U);
+T = [0; 0];
+H_2 = [A T; 0 0 1];
+
+%Restore the image
+H_metric = inv(H_2);
+I_metric = apply_H(I_affine, H_metric);
+figure; imshow(uint8(I_metric));
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Affine and Metric Rectification of the left facade of image 0001
 
