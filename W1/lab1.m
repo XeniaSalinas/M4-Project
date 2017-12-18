@@ -141,18 +141,18 @@ affine_rect_H = eye(3);
 affine_rect_H(3,:) = vline;
 
 % Apply affine rectification
-I2 = apply_H(I, affine_rect_H);
-figure; imshow(uint8(I2));
+I_affine = apply_H(I, affine_rect_H);
+figure; imshow(uint8(I_affine));
 
 % Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
-affine_rect_H_lines = transpose(inv(affine_rect_H));
-lr1 = affine_rect_H_lines * l1;
-lr2 = affine_rect_H_lines * l2;
-lr3 = affine_rect_H_lines * l3;
-lr4 = affine_rect_H_lines * l4;
+metric_rect_H_lines = transpose(inv(affine_rect_H));
+lr1 = metric_rect_H_lines * l1;
+lr2 = metric_rect_H_lines * l2;
+lr3 = metric_rect_H_lines * l3;
+lr4 = metric_rect_H_lines * l4;
 
 % show the transformed lines in the transformed image
-figure;imshow(uint8(I2));
+figure;imshow(uint8(I_affine));
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
@@ -217,6 +217,18 @@ H_metric = inv(H_2);
 I_metric = apply_H(I_affine, H_metric);
 figure; imshow(uint8(I_metric));
 
+% Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
+metric_rect_H_lines = transpose(inv(H_metric));
+lr = metric_rect_H_lines * l;
+mr = metric_rect_H_lines * m;
+
+% show the transformed lines in the transformed image
+figure;imshow(uint8(I_affine));
+hold on;
+t=1:0.1:1000;
+plot(t, -(lr(1)*t + lr(3)) / lr(2), 'y');
+plot(t, -(mr(1)*t + mr(3)) / mr(2), 'g');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Affine and Metric Rectification of the left facade of image 0001
 
@@ -224,6 +236,110 @@ figure; imshow(uint8(I_metric));
 %       the stratified method (affine + metric). 
 %       Crop the initial image so that only the left facade is visible.
 %       Show the (properly) transformed lines that use in every step.
+
+I=imread('Data/0001_s.png');
+I = imcrop(I,[1 1 533 614]);
+
+A = load('Data/0001_s_info_lines.txt');
+
+% Indices of pairs of points per line
+i = 614;
+p1 = [A(i,1) A(i,2) 1]';
+p2 = [A(i,3) A(i,4) 1]';
+i = 159;
+p3 = [A(i,1) A(i,2) 1]';
+p4 = [A(i,3) A(i,4) 1]';
+i = 645;
+p5 = [A(i,1) A(i,2) 1]';
+p6 = [A(i,3) A(i,4) 1]';
+i = 541;
+p7 = [A(i,1) A(i,2) 1]';
+p8 = [A(i,3) A(i,4) 1]';
+
+% Compute the lines l1, l2, l3, l4, that pass through the different pairs of points
+l1 = cross(p1, p2);
+l2 = cross(p3, p4);
+l3 = cross(p5, p6);
+l4 = cross(p7, p8);
+
+% Show the chosen lines in the image
+figure;imshow(I);
+hold on;
+t=1:0.1:1000;
+plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
+plot(t, -(l2(1)*t + l2(3)) / l2(2), 'g');
+plot(t, -(l3(1)*t + l3(3)) / l3(2), 'b');
+plot(t, -(l4(1)*t + l4(3)) / l4(2), 'r');
+
+%% Compute the homography that affinely rectifies the image
+
+% Compute vanishing points
+% cross-product between line 424 and 240
+vp_1 = cross(l1, l2);
+% cross-product between line 712 and 565
+vp_2 = cross(l3, l4);
+
+% Compute vanishing line
+vline = cross(vp_1, vp_2);
+vline = vline / vline(3);
+
+% Construct affine recitification matrix
+affine_rect_H = eye(3);
+affine_rect_H(3,:) = vline;
+
+% Apply affine rectification
+I_affine = apply_H(I, affine_rect_H);
+figure; imshow(uint8(I_affine));
+
+% Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
+metric_rect_H_lines = transpose(inv(affine_rect_H));
+lr1 = metric_rect_H_lines * l1;
+lr2 = metric_rect_H_lines * l2;
+lr3 = metric_rect_H_lines * l3;
+lr4 = metric_rect_H_lines * l4;
+
+% show the transformed lines in the transformed image
+figure;imshow(uint8(I_affine));
+hold on;
+t=1:0.1:1000;
+plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
+plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'g');
+plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'b');
+plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'r');
+
+%% Compute the homography that metricly rectifies the image
+%Choose two orthogonal lines
+l = lr1;
+m = lr3;
+
+% Solve the system of equation provided by the orthogonal lines
+A = [l(1)*m(1) l(1)*m(2)+l(1)*m(2)];
+B = - l(2)*m(2);
+s = linsolve(A,B);
+S = [s(1) s(2); s(2) 1];
+
+% Decompose the S matrix
+[U,D,V] = svd(S);
+A = U*sqrt(D(1:2,1:2))*transpose(U);
+T = [0; 0];
+H_2 = [A T; 0 0 1];
+
+%Restore the image
+H_metric = inv(H_2);
+I_metric = apply_H(I_affine, H_metric);
+figure; imshow(uint8(I_metric));
+
+% Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
+metric_rect_H_lines = transpose(inv(H_metric));
+lr = metric_rect_H_lines * l;
+mr = metric_rect_H_lines * m;
+
+% show the transformed lines in the transformed image
+figure;imshow(uint8(I_affine));
+hold on;
+t=1:0.1:1000;
+plot(t, -(lr(1)*t + lr(3)) / lr(2), 'y');
+plot(t, -(mr(1)*t + mr(3)) / mr(2), 'g');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. OPTIONAL: Metric Rectification in a single step
