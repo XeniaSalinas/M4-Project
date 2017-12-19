@@ -34,8 +34,8 @@ ld2_c = [ld2_p(1)/ld2_p(3), ld2_p(2)/ld2_p(3)];
 rd2_c = [rd2_p(1)/rd2_p(3), rd2_p(2)/rd2_p(3)];
 
 % Size of the transformed image
-m2 = ceil(abs(max([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]) - min([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]))) + 1; % columns
-n2 = ceil(abs(max([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]) - min([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]))) + 1; % rows
+m2 = round(abs(max([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]) - min([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)])));
+n2 = round(abs(max([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]) - min([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)])));
 
 %% Compute the position rectification vector
 xoffset = floor(min([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]));

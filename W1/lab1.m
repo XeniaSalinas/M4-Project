@@ -31,8 +31,8 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %% 1.2. Affinities
 
 % Generate a matrix H which produces an affine transformation
-A = [1 1;
-     0 1];
+A = [1 -0.1;
+     0.5 0.8];
 T = [20; 30];
 H = [A T; 0 0 1];
 
@@ -49,33 +49,32 @@ S = D(1:2,1:2);
 
 % Verify that the product of the four previous transformations
 % produces the same matrix H as above
-tolerance = 1e-12;
+tolerance = 1e-4;
 A2 = R_theta * transpose(R_phi) * S * R_phi;
 H_decomposed = [A2 T; 0 0 1];
 if abs(sum(sum(H - H_decomposed))) > tolerance
     error('H is no equal to its decomposition');
 end
 
-% ToDo: verify that the proper sequence of the four previous
+% Verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
-%I3 = apply_H(I, [zeros(2,2) T; 0 0 1]);
-% I3 = apply_H(I,[R_phi [0; 0]; 0 0 1]);
-% I3 = apply_H(I3,[S [0; 0]; 0 0 1]);
-% I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
-% I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1]);
-% figure; imshow(uint8(I3));
+I3 = apply_H(I, [eye(2) T; 0 0 1]);
+I3 = apply_H(I3,[R_phi T; 0 0 1]);
+I3 = apply_H(I3,[S [0; 0]; 0 0 1]);
+I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
+I3 = crop_transformed_image(I3);
+I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1]);
+I3 = crop_transformed_image(I3);
+figure; imshow(uint8(I3));
 
-I_decomposed = apply_H(I,H_decomposed);
-figure; imshow(uint8(I_decomposed));
-
-%Show the error
-figure; imshow(uint8(I2-I_decomposed)); 
-
-if abs(sum(sum(sum(uint8(I2 - I_decomposed))))) > tolerance
-    error('I_decomposed is no equal to I2');
-else
-    disp('I_decomposed is equal to I2');
-end
+% Compare the image transformed using H and the image transformed using the
+% decomposition of H.
+[rows, cols, c] = size(I2);
+I3_resize = imresize(I3, [rows, cols]);
+error_im = uint8(I2 - I3_resize);
+mae = mean2(error_im);  % mean absolute difference
+fprintf('Mean average error: %.3f\n', mae);
+figure; imshow(error_im); 
 
 %% 1.3 Projective transformations (homographies)
 
