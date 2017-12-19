@@ -357,6 +357,7 @@ H_metric = inv(H_2);
 
 %Restore the image
 I_metric = apply_H(I_affine, H_metric);
+I_metric = crop_transformed_image(I_metric);
 
 % Compute the transformed lines lr, mr (NOTE: l'=H-T *l)
 metric_rect_H_lines = transpose(inv(H_metric));
@@ -367,8 +368,8 @@ mr = metric_rect_H_lines * m;
 figure; imshow(uint8(I_metric));
 hold on;
 t=1:0.1:3000;
-plot(t, -(lr(1)*t + lr(3)) / lr(2) -1000, 'y');
-plot(t, -(mr(1)*t + mr(3)) / mr(2) +1850, 'g');
+plot(t, -(lr(1)*t + lr(3)) / lr(2) -500, 'y');
+plot(t, -(mr(1)*t + mr(3)) / mr(2) +920, 'g');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. OPTIONAL: Metric Rectification in a single step

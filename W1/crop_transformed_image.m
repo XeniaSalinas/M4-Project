@@ -14,7 +14,7 @@ y = bb(2);
 w = bb(3);
 h = bb(4);
 
-cropped_I = I(y:y+h,x:x+w,:);
+cropped_I = I(y:y+h-1,x:x+w-1,:);
 
 end
 
