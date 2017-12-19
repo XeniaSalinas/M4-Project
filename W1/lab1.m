@@ -163,27 +163,26 @@ plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'r');
 
 % To evaluate the results, compute the angle between the different pair 
 % of lines before and after the image transformation
-l1_2 = [l1(1)/l1(3), l1(2)/l1(3)];
-l2_2 = [l2(1)/l2(3), l2(2)/l2(3)];
-l3_2 = [l3(1)/l3(3), l3(2)/l3(3)];
-l4_2 = [l4(1)/l4(3), l4(2)/l4(3)];
 
-lr1_2 = [lr1(1)/lr1(3), lr1(2)/lr1(3)];
-lr2_2 = [lr2(1)/lr2(3), lr2(2)/lr2(3)];
-lr3_2 = [lr3(1)/lr3(3), lr3(2)/lr3(3)];
-lr4_2 = [lr4(1)/lr4(3), lr4(2)/lr4(3)];
+%Euclidean representation of the lines before the transformation
+l1_e = [l1(1)/l1(3), l1(2)/l1(3)];
+l2_e = [l2(1)/l2(3), l2(2)/l2(3)];
+l3_e = [l3(1)/l3(3), l3(2)/l3(3)];
+l4_e = [l4(1)/l4(3), l4(2)/l4(3)];
 
-a1 = mod(atan2( det([l1_2;l2_2;]) , dot(l1_2,l2_2) ), 2*pi );
-angleout = abs((a1>pi/2)*pi-a1);
-a1_transf = mod(atan2( det([lr1_2;lr2_2;]) , dot(lr1_2,lr2_2) ), 2*pi );
-angleout_transf = abs((a1_transf>pi/2)*pi-a1_transf);
-angle_dif = (angleout - angleout_transf) * 180/pi
+%Euclidean representation of the lines after the transformation
+lr1_e = [lr1(1)/lr1(3), lr1(2)/lr1(3)];
+lr2_e = [lr2(1)/lr2(3), lr2(2)/lr2(3)];
+lr3_e = [lr3(1)/lr3(3), lr3(2)/lr3(3)];
+lr4_e = [lr4(1)/lr4(3), lr4(2)/lr4(3)];
 
-a2 = mod(atan2( det([l4_2;l3_2;]) , dot(l4_2,l3_2) ), 2*pi );
-angleout = abs((a2>pi/2)*pi-a1);
-a2_transf = mod(atan2( det([lr4_2;lr3_2;]) , dot(lr4_2,lr3_2) ), 2*pi );
-angleout_transf = abs((a2_transf>pi/2)*pi-a2_transf);
-angle_dif = (angleout - angleout_transf) * 180/pi
+%Angle between two orthogonal lines before the affine recification
+a1 = mod(atan2( det([l1_e;l2_e;]) , dot(l1_e,l2_e) ), 2*pi );
+angleout = abs((a1>pi/2)*pi-a1)*180/pi
+
+%Angle between two orthogonal lines after the affine recification
+a1_affine = mod(atan2( det([lr1_e;lr2_e;]) , dot(lr1_e,lr2_e) ), 2*pi );
+angleout_affine = abs((a1_affine>pi/2)*pi-a1_affine)*180/pi
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -237,6 +236,23 @@ hold on;
 t=1:0.1:1000;
 plot(t, -(lr(1)*t + lr(3)) / lr(2), 'y');
 plot(t, -(mr(1)*t + mr(3)) / mr(2), 'g');
+
+%Euclidean coordinates of the lines before the metric rectification
+l_e = [l(1)/l(3), l(2)/l(3)];
+m_e = [m(1)/m(3), m(2)/m(3)];
+
+%Euclidean coordinates of the lines after the metric rectification
+lr_e = [lr(1)/lr(3), lr(2)/lr(3)];
+mr_e = [mr(1)/mr(3), mr(2)/mr(3)];
+
+%Angle between two orthogonal lines before the metric recification
+a2 = mod(atan2( det([m_e;l_e;]) , dot(m_e,l_e) ), 2*pi );
+angleout = abs((a2>pi/2)*pi-a1)* 180/pi
+
+%Angle between two orthogonal lines after the metric recification
+a2_metric = mod(atan2( det([mr_e;lr_e;]) , dot(mr_e,lr_e) ), 2*pi );
+angleout_metric = abs((a2_metric>pi/2)*pi-a2_metric)* 180/pi
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Affine and Metric Rectification of the left facade of image 0001
