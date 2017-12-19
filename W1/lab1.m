@@ -166,22 +166,19 @@ plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'r');
 
 %Euclidean representation of the lines before the transformation
 l1_e = [l1(1)/l1(3), l1(2)/l1(3)];
-l2_e = [l2(1)/l2(3), l2(2)/l2(3)];
 l3_e = [l3(1)/l3(3), l3(2)/l3(3)];
-l4_e = [l4(1)/l4(3), l4(2)/l4(3)];
 
 %Euclidean representation of the lines after the transformation
 lr1_e = [lr1(1)/lr1(3), lr1(2)/lr1(3)];
-lr2_e = [lr2(1)/lr2(3), lr2(2)/lr2(3)];
 lr3_e = [lr3(1)/lr3(3), lr3(2)/lr3(3)];
-lr4_e = [lr4(1)/lr4(3), lr4(2)/lr4(3)];
+
 
 %Angle between two orthogonal lines before the affine recification
-a1 = mod(atan2( det([l1_e;l2_e;]) , dot(l1_e,l2_e) ), 2*pi );
+a1 = mod(atan2( det([l1_e;l3_e;]) , dot(l1_e,l3_e) ), 2*pi );
 angleout = abs((a1>pi/2)*pi-a1)*180/pi
 
 %Angle between two orthogonal lines after the affine recification
-a1_affine = mod(atan2( det([lr1_e;lr2_e;]) , dot(lr1_e,lr2_e) ), 2*pi );
+a1_affine = mod(atan2( det([lr1_e;lr3_e;]) , dot(lr1_e,lr3_e) ), 2*pi );
 angleout_affine = abs((a1_affine>pi/2)*pi-a1_affine)*180/pi
 
 
