@@ -25,7 +25,12 @@ H = [s*cosd(angle) -s*sind(angle) t(1); ...
     0 0 1];
 
 I2 = apply_H(I, H);
-figure; imshow(I); figure; imshow(uint8(I2));
+figure(1); 
+imshow(I);
+title('Image 0005_s');
+figure(2); 
+imshow(uint8(I2));
+title('Image 0005_s with similarity transformation');
 
 
 %% 1.2. Affinities
@@ -37,7 +42,9 @@ T = [20; 30];
 H = [A T; 0 0 1];
 
 I2 = apply_H(I, H);
-figure; imshow(I); figure; imshow(uint8(I2));
+figure(3); 
+imshow(uint8(I2));
+title('Image 0005_s with affinity transformation');
 
 %% 1.2.1 Affinity decomposition
 % Decompose the affinity in four transformations: two
@@ -65,8 +72,9 @@ I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
 I3 = crop_transformed_image(I3);
 I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1]);
 I3 = crop_transformed_image(I3);
-figure; imshow(uint8(I3));
-
+figure(4); 
+imshow(uint8(I3));
+title('Image 0005_s with affinity (decomposed) transformation');
 % Compare the image transformed using H and the image transformed using the
 % decomposition of H.
 [rows, cols, c] = size(I2);
@@ -74,7 +82,7 @@ I3_resize = imresize(I3, [rows, cols]);
 error_im = uint8(I2 - I3_resize);
 mae = mean2(error_im);  % mean absolute difference
 fprintf('Mean average error: %.3f\n', mae);
-figure; imshow(error_im); 
+figure(12); imshow(error_im); 
 
 %% 1.3 Projective transformations (homographies)
 
@@ -85,7 +93,9 @@ t = [3; -4];
 v = [0.0005 0.001];
 H_projective = [A t; v 1];
 I_projective = apply_H(I, H_projective);
-figure; imshow(I); figure; imshow(uint8(I_projective));
+figure(5); 
+imshow(uint8(I_projective));
+title('Image 0005_s with projective transformation');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Affine Rectification
@@ -116,7 +126,9 @@ l3 = cross(p5, p6);
 l4 = cross(p7, p8);
 
 % Show the chosen lines in the image
-figure;imshow(I);
+figure(6);
+imshow(I);
+title('Image 0000_s');
 hold on;
 t=1:0.1:1000;
 plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
@@ -142,7 +154,6 @@ affine_rect_H(3,:) = vline;
 
 % Apply affine rectification
 I_affine = apply_H(I, affine_rect_H);
-figure; imshow(uint8(I_affine));
 
 % Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
 affine_rect_H_lines = transpose(inv(affine_rect_H));
@@ -152,7 +163,9 @@ lr3 = affine_rect_H_lines * l3;
 lr4 = affine_rect_H_lines * l4;
 
 % show the transformed lines in the transformed image
-figure;imshow(uint8(I_affine));
+figure(7); 
+imshow(uint8(I_affine));
+title('Image 0000_s affinitely rectified');
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
@@ -195,19 +208,14 @@ angleout_affine = abs((a1_affine>pi/2)*pi-a1_affine)*180/pi
 %Choose two orthogonal lines
 l = lr1;
 m = lr3;
+%Diagonal lines
+l2 = affine_rect_H_lines*cross(p4,p6);
+m2 = affine_rect_H_lines*cross(p2,p5);
 
-% Get the points in the corners of the window:
-x1 = cross(lr1, lr3);
-x2 = cross(lr2, lr4);
-x3 = cross(lr1, lr4);
-x4 = cross(lr2, lr3);
-% With these points, compute the diagonal lines:
-v1 = cross(x1, x2);
-v2 = cross(x3, x4);
 
 % Solve the system of equation provided by the orthogonal lines
 B = [l(1)*m(1), l(1)*m(2)+l(2)*m(1), l(2)*m(2);
-    v1(1)*v2(1), v1(1)*v2(2)+v1(2)*v2(1), v1(2)*v2(2)];
+    l2(1)*m2(1), l2(1)*m2(2)+l2(2)*m2(1), l2(2)*m2(2)];
 s = null(B); % Null vector of B.
 S = [s(1), s(2); s(2), s(3)];
 
@@ -225,13 +233,18 @@ I_metric = apply_H(I_affine, H_metric);
 metric_rect_H_lines = transpose(inv(H_metric));
 lr = metric_rect_H_lines * l;
 mr = metric_rect_H_lines * m;
-
+lr2 = metric_rect_H_lines * l2;
+mr2 = metric_rect_H_lines * m2;
 % show the transformed lines in the transformed image
-figure; imshow(uint8(I_metric));
+figure(8); 
+imshow(uint8(I_metric));
+title('Image 0000_s metricly rectified');
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr(1)*t + lr(3)) / lr(2), 'y');
 plot(t, -(mr(1)*t + mr(3)) / mr(2), 'g');
+plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'b');
+plot(t, -(mr2(1)*t + mr2(3)) / mr2(2), 'r');
 
 %Euclidean coordinates of the lines before the metric rectification
 l_e = [l(1)/l(3), l(2)/l(3)];
@@ -284,7 +297,8 @@ l3 = cross(p5, p6);
 l4 = cross(p7, p8);
 
 % Show the chosen lines in the image
-figure;imshow(I);
+figure(9);imshow(I);
+title('Image 0001_s cropped');
 hold on;
 t=1:0.1:1000;
 plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
@@ -310,7 +324,6 @@ affine_rect_H(3,:) = vline;
 
 % Apply affine rectification
 I_affine = apply_H(I, affine_rect_H);
-figure; imshow(uint8(I_affine));
 
 % Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
 affine_rect_H_lines = transpose(inv(affine_rect_H));
@@ -320,7 +333,8 @@ lr3 = affine_rect_H_lines * l3;
 lr4 = affine_rect_H_lines * l4;
 
 % show the transformed lines in the transformed image
-figure;imshow(uint8(I_affine));
+figure(10); imshow(uint8(I_affine));
+title('Image 0001_s cropped affinitely rectified');
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
@@ -329,22 +343,18 @@ plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'b');
 plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'r');
 
 %% Compute the homography that metricly rectifies the image
+
 %Choose two orthogonal lines
 l = lr1;
 m = lr3;
+%Diagonal lines
+l2 = affine_rect_H_lines*cross(p4,p6);
+m2 = affine_rect_H_lines*cross(p2,p5);
 
-% Get the points in the corners of the window:
-x1 = cross(lr1, lr3);
-x2 = cross(lr2, lr4);
-x3 = cross(lr1, lr4);
-x4 = cross(lr2, lr3);
-% With these points, compute the diagonal lines:
-v1 = cross(x1, x2);
-v2 = cross(x3, x4);
 
 % Solve the system of equation provided by the orthogonal lines
 B = [l(1)*m(1), l(1)*m(2)+l(2)*m(1), l(2)*m(2);
-    v1(1)*v2(1), v1(1)*v2(2)+v1(2)*v2(1), v1(2)*v2(2)];
+    l2(1)*m2(1), l2(1)*m2(2)+l2(2)*m2(1), l2(2)*m2(2)];
 s = null(B); % Null vector of B.
 S = [s(1), s(2); s(2), s(3)];
 
@@ -357,19 +367,23 @@ H_metric = inv(H_2);
 
 %Restore the image
 I_metric = apply_H(I_affine, H_metric);
-I_metric = crop_transformed_image(I_metric);
 
 % Compute the transformed lines lr, mr (NOTE: l'=H-T *l)
 metric_rect_H_lines = transpose(inv(H_metric));
 lr = metric_rect_H_lines * l;
 mr = metric_rect_H_lines * m;
+lr2 = metric_rect_H_lines * l2;
+mr2 = metric_rect_H_lines * m2;
 
 % show the transformed lines in the transformed image
-figure; imshow(uint8(I_metric));
+figure(11); imshow(uint8(I_metric));
+title('Image 0001_s cropped metricly rectified');
 hold on;
-t=1:0.1:3000;
-plot(t, -(lr(1)*t + lr(3)) / lr(2) -500, 'y');
-plot(t, -(mr(1)*t + mr(3)) / mr(2) +920, 'g');
+t=1:0.1:1000;
+plot(t, -(lr(1)*t + lr(3)) / lr(2), 'y');
+plot(t, -(mr(1)*t + mr(3)) / mr(2), 'g');
+plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'b');
+plot(t, -(mr2(1)*t + mr2(3)) / mr2(2), 'r');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. OPTIONAL: Metric Rectification in a single step
