@@ -201,22 +201,30 @@ angle_dif = (angleout - angleout_transf) * 180/pi
 l = lr1;
 m = lr3;
 
-% Solve the system of equation provided by the orthogonal lines
-A = [l(1)*m(1) l(1)*m(2)+l(1)*m(2)];
-B = - l(2)*m(2);
-s = linsolve(A,B);
-S = [s(1) s(2); s(2) 1];
+% Get the points in the corners of the window:
+x1 = cross(lr1, lr3);
+x2 = cross(lr2, lr4);
+x3 = cross(lr1, lr4);
+x4 = cross(lr2, lr3);
+% With these points, compute the diagonal lines:
+v1 = cross(x1, x2);
+v2 = cross(x3, x4);
 
-% Decompose the S matrix
-[U,D,V] = svd(S);
-A = U*sqrt(D(1:2,1:2))*transpose(U);
+% Solve the system of equation provided by the orthogonal lines
+B = [l(1)*m(1), l(1)*m(2)+l(2)*m(1), l(2)*m(2);
+    v1(1)*v2(1), v1(1)*v2(2)+v1(2)*v2(1), v1(2)*v2(2)];
+s = null(B); % Null vector of B.
+S = [s(1), s(2); s(2), s(3)];
+
+% Compute the upper triangular matrix using the Cholesky factorization:
+K = inv(chol(inv(S)));
+
 T = [0; 0];
-H_2 = [A T; 0 0 1];
+H_2 = [K T; 0 0 1];
+H_metric = inv(H_2);
 
 %Restore the image
-H_metric = inv(H_2);
 I_metric = apply_H(I_affine, H_metric);
-figure; imshow(uint8(I_metric));
 
 % Compute the transformed lines lr, mr (NOTE: l'=H-T *l)
 metric_rect_H_lines = transpose(inv(H_metric));
@@ -224,7 +232,7 @@ lr = metric_rect_H_lines * l;
 mr = metric_rect_H_lines * m;
 
 % show the transformed lines in the transformed image
-figure;imshow(uint8(I_affine));
+figure; imshow(uint8(I_metric));
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr(1)*t + lr(3)) / lr(2), 'y');
@@ -313,30 +321,38 @@ plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'r');
 l = lr1;
 m = lr3;
 
-% Solve the system of equation provided by the orthogonal lines
-A = [l(1)*m(1) l(1)*m(2)+l(1)*m(2)];
-B = - l(2)*m(2);
-s = linsolve(A,B);
-S = [s(1) s(2); s(2) 1];
+% Get the points in the corners of the window:
+x1 = cross(lr1, lr3);
+x2 = cross(lr2, lr4);
+x3 = cross(lr1, lr4);
+x4 = cross(lr2, lr3);
+% With these points, compute the diagonal lines:
+v1 = cross(x1, x2);
+v2 = cross(x3, x4);
 
-% Decompose the S matrix
-[U,D,V] = svd(S);
-A = U*sqrt(D(1:2,1:2))*transpose(U);
+% Solve the system of equation provided by the orthogonal lines
+B = [l(1)*m(1), l(1)*m(2)+l(2)*m(1), l(2)*m(2);
+    v1(1)*v2(1), v1(1)*v2(2)+v1(2)*v2(1), v1(2)*v2(2)];
+s = null(B); % Null vector of B.
+S = [s(1), s(2); s(2), s(3)];
+
+% Compute the upper triangular matrix using the Cholesky factorization:
+K = inv(chol(inv(S)));
+
 T = [0; 0];
-H_2 = [A T; 0 0 1];
+H_2 = [K T; 0 0 1];
+H_metric = inv(H_2);
 
 %Restore the image
-H_metric = inv(H_2);
 I_metric = apply_H(I_affine, H_metric);
-figure; imshow(uint8(I_metric));
 
-% Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
+% Compute the transformed lines lr, mr (NOTE: l'=H-T *l)
 metric_rect_H_lines = transpose(inv(H_metric));
 lr = metric_rect_H_lines * l;
 mr = metric_rect_H_lines * m;
 
 % show the transformed lines in the transformed image
-figure;imshow(uint8(I_affine));
+figure; imshow(uint8(I_metric));
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr(1)*t + lr(3)) / lr(2), 'y');
