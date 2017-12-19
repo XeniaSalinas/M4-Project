@@ -367,9 +367,9 @@ mr = metric_rect_H_lines * m;
 % show the transformed lines in the transformed image
 figure; imshow(uint8(I_metric));
 hold on;
-t=1:0.1:1000;
-plot(t, -(lr(1)*t + lr(3)) / lr(2), 'y');
-plot(t, -(mr(1)*t + mr(3)) / mr(2), 'g');
+t=1:0.1:3000;
+plot(t, -(lr(1)*t + lr(3)) / lr(2) -1000, 'y');
+plot(t, -(mr(1)*t + mr(3)) / mr(2) +1850, 'g');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. OPTIONAL: Metric Rectification in a single step
