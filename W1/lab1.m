@@ -1,4 +1,4 @@
-close all, clear
+close all, clear, clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Lab 1: Image rectification
 
@@ -51,30 +51,30 @@ S = D(1:2,1:2);
 % produces the same matrix H as above
 tolerance = 1e-12;
 A2 = R_theta * transpose(R_phi) * S * R_phi;
-H2 = [A2 T; 0 0 1];
-if abs(sum(sum(H - H2))) > tolerance
+H_decomposed = [A2 T; 0 0 1];
+if abs(sum(sum(H - H_decomposed))) > tolerance
     error('H is no equal to its decomposition');
 end
 
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
-% I3 = apply_H(I, [zeros(2,2) T; 0 0 1]);
-I3 = apply_H(I,[R_phi [0; 0]; 0 0 1]);
-I3 = apply_H(I3,[S [0; 0]; 0 0 1]);
-I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
-%Crop the last tranformation
-I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1]);
-%Resize the transformation because the image sizes mismatch
-% I3 = imresize(I3,[ size(I2,1)  size(I2,2)],'bilinear');
-% % figure; imshow(uint8(I3));
-% t2 = isequal(I2,I3)
-% t2 = sum(sum((I2-I3)))
+%I3 = apply_H(I, [zeros(2,2) T; 0 0 1]);
+% I3 = apply_H(I,[R_phi [0; 0]; 0 0 1]);
+% I3 = apply_H(I3,[S [0; 0]; 0 0 1]);
+% I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
+% I3 = apply_H(I3,[R_theta [0; 0]; 0 0 1]);
+% figure; imshow(uint8(I3));
+
+I_decomposed = apply_H(I,H_decomposed);
+figure; imshow(uint8(I_decomposed));
 
 %Show the error
-% figure; imshow(uint8(I2-I3)); 
+figure; imshow(uint8(I2-I_decomposed)); 
 
-if abs(sum(sum(I2 - I3))) > tolerance
-    error('I3 is no equal to I2');
+if abs(sum(sum(sum(uint8(I2 - I_decomposed))))) > tolerance
+    error('I_decomposed is no equal to I2');
+else
+    display('I_decomposed is equal to I2');
 end
 
 %% 1.3 Projective transformations (homographies)
@@ -84,9 +84,9 @@ A = [0.9 0.12;
      0.05 1.1];
 t = [3; -4];
 v = [0.0005 0.001];
-H = [A t; v 1];
-I2 = apply_H(I, H);
-figure; imshow(I); figure; imshow(uint8(I2));
+H_projective = [A t; v 1];
+I_projective = apply_H(I, H_projective);
+figure; imshow(I); figure; imshow(uint8(I_projective));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Affine Rectification
@@ -218,7 +218,7 @@ H_metric = inv(H_2);
 I_metric = apply_H(I_affine, H_metric);
 figure; imshow(uint8(I_metric));
 
-% Compute the transformed lines lr1, lr2, lr3, lr4 (NOTE: l'=H-T *l)
+% Compute the transformed lines lr, mr (NOTE: l'=H-T *l)
 metric_rect_H_lines = transpose(inv(H_metric));
 lr = metric_rect_H_lines * l;
 mr = metric_rect_H_lines * m;
