@@ -74,7 +74,7 @@ figure; imshow(uint8(I2-I_decomposed));
 if abs(sum(sum(sum(uint8(I2 - I_decomposed))))) > tolerance
     error('I_decomposed is no equal to I2');
 else
-    display('I_decomposed is equal to I2');
+    disp('I_decomposed is equal to I2');
 end
 
 %% 1.3 Projective transformations (homographies)
