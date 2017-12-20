@@ -133,5 +133,51 @@ line_info_file = load('Data/0001_s_info_lines.txt');
 %% 5. OPTIONAL: Metric Rectification in a single step
 % Use 5 pairs of orthogonal lines (pages 55-57, Hartley-Zisserman book)
 
+I=imread('Data/0000_s.png');
+A = load('Data/0000_s_info_lines.txt');
 
+% Indices of pairs of points per line
+i = 493;
+p1 = [A(i,1) A(i,2) 1]';
+p2 = [A(i,3) A(i,4) 1]';
+i = 48;
+p3 = [A(i,1) A(i,2) 1]';
+p4 = [A(i,3) A(i,4) 1]';
+i = 186;
+p5 = [A(i,1) A(i,2) 1]';
+p6 = [A(i,3) A(i,4) 1]';
+i = 508;
+p7 = [A(i,1) A(i,2) 1]';
+p8 = [A(i,3) A(i,4) 1]';
+i = 424;
+p9 = [A(i,1) A(i,2) 1]';
+p10 = [A(i,3) A(i,4) 1]';
+i = 712;
+p11 = [A(i,1) A(i,2) 1]';
+p12 = [A(i,3) A(i,4) 1]';
+i = 240;
+p13 = [A(i,1) A(i,2) 1]';
+p14 = [A(i,3) A(i,4) 1]';
+i = 565;
+p15 = [A(i,1) A(i,2) 1]';
+p16 = [A(i,3) A(i,4) 1]';
+i = 357;
+p17 = [A(i,1) A(i,2) 1]';
+p18 = [A(i,3) A(i,4) 1]';
+i = 119;
+p19 = [A(i,1) A(i,2) 1]';
+p20 = [A(i,3) A(i,4) 1]';
 
+% Compute the lines that pass through the different pairs of points
+l1 = cross(p1, p2);
+m1 = cross(p3, p4);
+l2 = cross(p5, p6);
+m2 = cross(p7, p8);
+l3 = cross(p9, p10);
+m3 = cross(p11, p12);
+l4 = cross(p13, p14);
+m4 = cross(p15, p16);
+l5 = cross(p17, p18);
+m5 = cross(p19, p20);
+
+[H_rect, I_rect] = single_step_rectification(I,l1,m1,l2,m2,l3,m3,l4,m4,l5,m5);
