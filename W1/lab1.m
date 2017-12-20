@@ -119,7 +119,7 @@ line_info_file = load('Data/0000_s_info_lines.txt');
 %       Show the (properly) transformed lines that use in every step.
 
 I=imread('Data/0001_s.png');
-I = I(1:533, 1:614, :);
+I = I(1:614, 1:533, :);
 line_info_file = load('Data/0001_s_info_lines.txt');
 
 % Choose the image points

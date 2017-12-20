@@ -23,7 +23,7 @@ l3 = cross(p5, p6);
 l4 = cross(p7, p8);
 
 % Show the chosen lines in the image
-figure, imshow(I), title('Image 0000_s');
+figure, imshow(I), title('Original image');
 hold on;
 t=1:0.1:1000;
 plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
@@ -58,9 +58,9 @@ lr3 = inv(H_affine)' * l3;
 lr4 = inv(H_affine)' * l4;
 
 % show the transformed lines in the transformed image
-figure, imshow(uint8(I_affine)), title('Image 0000_s affinitely rectified');
+figure, imshow(uint8(I_affine)), title('Image affinitely rectified');
 hold on;
-t=1:0.1:1000;
+t=1:0.1:max(size(I_affine));
 plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
 plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'g');
 plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'b');
@@ -79,12 +79,12 @@ lr3_e = [lr3(1)/lr3(3), lr3(2)/lr3(3)];
 
 %Angle between two orthogonal lines before the affine recification
 a1 = mod(atan2( det([l1_e;l3_e;]) , dot(l1_e,l3_e) ), 2*pi );
-disp('Angle between two orthogonal lines before the affine recification')
-angleout = abs((a1>pi/2)*pi-a1)*180/pi
+angleout = abs((a1>pi/2)*pi-a1)*180/pi;
+disp(['Angle between two orthogonal lines before the affine recification: ', num2str(angleout)])
 
 %Angle between two orthogonal lines after the affine recification
 a1_affine = mod(atan2( det([lr1_e;lr3_e;]) , dot(lr1_e,lr3_e) ), 2*pi );
-disp('Angle between two orthogonal lines after the affine recification')
-angleout_affine = abs((a1_affine>pi/2)*pi-a1_affine)*180/pi
+angleout_affine = abs((a1_affine>pi/2)*pi-a1_affine)*180/pi;
+disp(['Angle between two orthogonal lines after the affine recification: ', num2str(angleout_affine)])
 
 end

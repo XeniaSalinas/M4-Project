@@ -52,6 +52,11 @@ H_metric = inv(H_2);
 %Restore the image
 I_metric = apply_H(I_affine, H_metric);
 
+if (I_metric(1,1,1) == 0 && I_metric(1,1,2) == 0 && I_metric(1,1,3) == 0)
+    offset = find(I_metric(1,:,1)~=0,1);
+    H_metric(1,3) = offset;
+end
+
 % Compute the transformed lines lr, mr (NOTE: l'=H-T *l)
 lr = inv(H_metric)' * l;
 mr = inv(H_metric)' * m;
@@ -60,9 +65,9 @@ mr2 = inv(H_metric)' * m2;
 
 % show the transformed lines in the transformed image
 figure, imshow(uint8(I_metric));
-title('Image 0000_s metricly rectified');
+title('Image metricly rectified');
 hold on;
-t=1:0.1:1000;
+t=1:0.1:max(size(I_metric));
 plot(t, -(lr(1)*t + lr(3)) / lr(2), 'y');
 plot(t, -(mr(1)*t + mr(3)) / mr(2), 'g');
 plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'b');
@@ -78,12 +83,12 @@ mr_e = [mr(1)/mr(3), mr(2)/mr(3)];
 
 %Angle between two orthogonal lines before the metric recification
 a2 = mod(atan2( det([m_e;l_e;]) , dot(m_e,l_e) ), 2*pi );
-disp('Angle between two orthogonal lines before the metric recification')
-angleout = abs((a2>pi/2)*pi-a2)* 180/pi
+angleout = abs((a2>pi/2)*pi-a2)* 180/pi;
+disp(['Angle between two orthogonal lines before the metric recification: ', num2str(angleout)])
 
 %Angle between two orthogonal lines after the metric recification
 a2_metric = mod(atan2( det([mr_e;lr_e;]) , dot(mr_e,lr_e) ), 2*pi );
-disp('Angle between two orthogonal lines after the metric recification')
-angleout_metric = abs((a2_metric>pi/2)*pi-a2_metric)* 180/pi
+angleout_metric = abs((a2_metric>pi/2)*pi-a2_metric)* 180/pi;
+disp(['Angle between two orthogonal lines after the metric recification: ', num2str(angleout_metric)])
 
 end
