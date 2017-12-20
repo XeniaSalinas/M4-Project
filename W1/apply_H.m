@@ -33,13 +33,21 @@ ru2_c = [ru2_p(1)/ru2_p(3), ru2_p(2)/ru2_p(3)];
 ld2_c = [ld2_p(1)/ld2_p(3), ld2_p(2)/ld2_p(3)];
 rd2_c = [rd2_p(1)/rd2_p(3), rd2_p(2)/rd2_p(3)];
 
-% Size of the transformed image
-m2 = round(abs(max([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]) - min([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)])));
-n2 = round(abs(max([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]) - min([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)])));
+% % Size of the transformed image
+% m2 = round(abs(max([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]) - min([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)])));
+% n2 = round(abs(max([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]) - min([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)])));
+% 
+% % Compute the position rectification vector
+% xoffset = floor(min([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]));
+% yoffset = floor(min([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]));
+             
+% top left and bottom right new corners
+lu_c = min([lu2_c; ru2_c; ld2_c; rd2_c]);
+rd_c = max([lu2_c; ru2_c; ld2_c; rd2_c]);
 
-%% Compute the position rectification vector
-xoffset = floor(min([lu2_c(1), ru2_c(1), ld2_c(1), rd2_c(1)]));
-yoffset = floor(min([lu2_c(2), ru2_c(2), ld2_c(2), rd2_c(2)]));
+% Rows (m2) and columns (n2) of the transformed image
+m2 = round(rd_c(1) - lu_c(1));
+n2 = round(rd_c(2) - lu_c(2));
 
 %% Compute the homography transformation
 I2 = zeros(n2,m2,c);
@@ -56,7 +64,8 @@ for i = 1:n2
         
         % Cartesian coordinate of the transformed image to be obtained in
         % the original image
-        x2_e = [x_idx; y_idx] + [xoffset; yoffset];
+        %x2_e = [x_idx; y_idx] + [xoffset; yoffset];
+        x2_e = [x_idx; y_idx] + lu_c';
         x2_p = H \ [x2_e; 1]; % same as inv(H)*b, but more accurate and efficient
         x_e = [x2_p(1)/x2_p(3), x2_p(2)/x2_p(3)];
         % If the transformed point is inside the source image, save the
