@@ -1,0 +1,6 @@
+function H = H_similarity_matrix(scale_factor, angle, translation)
+% Compute a similarity matrix
+H = [scale_factor*cosd(angle) -scale_factor*sind(angle) translation(1); ...
+    scale_factor*sind(angle) scale_factor*cosd(angle) translation(2); ...
+    0 0 1];
+end
