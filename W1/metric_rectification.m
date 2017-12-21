@@ -35,6 +35,16 @@ x4 = cross(l2_a, l3_a);
 % With these points, compute the diagonal lines:
 l2 = cross(x1, x2);
 m2 = cross(x3, x4);
+
+% show the transformed lines in the transformed image
+figure, imshow(uint8(I_affine));
+title('Image affinitely rectified');
+hold on;
+t=1:0.1:max(size(I_affine));
+plot(t, -(l(1)*t + l(3)) / l(2), 'y');
+plot(t, -(m(1)*t + m(3)) / m(2), 'g');
+plot(t, -(l2(1)*t + l2(3)) / l2(2), 'b');
+plot(t, -(m2(1)*t + m2(3)) / m2(2), 'r');
     
 % Solve the system of equation provided by the orthogonal lines
 B = [l(1)*m(1), l(1)*m(2)+l(2)*m(1), l(2)*m(2);
