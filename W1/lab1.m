@@ -57,8 +57,7 @@ end
 
 % Verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
-I3 = apply_H(I, [eye(2) T; 0 0 1]);
-I3 = apply_H(I3,[R_phi T; 0 0 1]);
+I3 = apply_H(I,[R_phi T; 0 0 1]);
 I3 = apply_H(I3,[S [0; 0]; 0 0 1]);
 I3 = apply_H(I3,[transpose(R_phi) [0; 0]; 0 0 1]);
 I3 = crop_transformed_image(I3);
