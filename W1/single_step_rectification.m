@@ -28,14 +28,23 @@ C = [s(1), s(2)/2, s(4)/2;
      s(4)/2, s(5)/2, s(6)];
 
 [U,D,~] = svd(C);
-H_rect = inv(U*D);
+D = sqrt(D);
+D(3,3) = 10;
+
+%Scale to reduce the image size
+scale = 9;
+Hs = [scale, 0, 0;
+      0, scale, 0;
+      0, 0, 1];
+U = Hs*U; 
+H_rect = inv(transpose(U)*D);
 
 %Restore the image
 I_rect = apply_H(I, H_rect);
-
+I_rect = crop_transformed_image(I_rect);
 if (I_rect(1,1,1) == 0 && I_rect(1,1,2) == 0 && I_rect(1,1,3) == 0)
     offset = find(I_rect(1,:,1)~=0,1);
-    H_rect(1,3) = offset;
+    H_rect(1,3) = H_rect(1,3) + offset;
 end
 
 % Compute the transformed lines lr, mr (NOTE: l'=H-T *l)
@@ -53,6 +62,16 @@ plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
 plot(t, -(mr1(1)*t + mr1(3)) / mr1(2), 'g');
 plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'b');
 plot(t, -(mr2(1)*t + mr2(3)) / mr2(2), 'r');
+
+%Angle between two orthogonal lines before the metric recification
+a2 = mod(atan2( det([m1;l1;]) , dot(m1,l1) ), 2*pi );
+angleout = abs((a2>pi/2)*pi-a2)* 180/pi;
+disp(['Angle between two orthogonal lines before the metric recification: ', num2str(angleout)])
+
+%Angle between two orthogonal lines after the metric recification
+a2_metric = mod(atan2( det([mr1;lr1;]) , dot(mr1,lr1) ), 2*pi );
+angleout_metric = abs((a2_metric>pi/2)*pi-a2_metric)* 180/pi;
+disp(['Angle between two orthogonal lines after the metric recification: ', num2str(angleout_metric)])
 
 end
 
