@@ -26,7 +26,7 @@ s = null(B); % Null vector of B.
 C = [s(1), s(2)/2, s(4)/2;
      s(2)/2, s(3), s(5)/2;
      s(4)/2, s(5)/2, s(6)];
- 
+
 [U,D,~] = svd(C);
 H_rect = inv(U*D);
 

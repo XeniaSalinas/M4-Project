@@ -137,36 +137,30 @@ I=imread('Data/0000_s.png');
 A = load('Data/0000_s_info_lines.txt');
 
 % Indices of pairs of points per line
-i = 493;
+i = 424;
 p1 = [A(i,1) A(i,2) 1]';
 p2 = [A(i,3) A(i,4) 1]';
-i = 48;
+i = 712;
 p3 = [A(i,1) A(i,2) 1]';
 p4 = [A(i,3) A(i,4) 1]';
-i = 186;
+i = 240;
 p5 = [A(i,1) A(i,2) 1]';
 p6 = [A(i,3) A(i,4) 1]';
-i = 508;
+i = 565;
 p7 = [A(i,1) A(i,2) 1]';
 p8 = [A(i,3) A(i,4) 1]';
-i = 424;
+i = 227;
 p9 = [A(i,1) A(i,2) 1]';
 p10 = [A(i,3) A(i,4) 1]';
-i = 712;
+i = 534;
 p11 = [A(i,1) A(i,2) 1]';
 p12 = [A(i,3) A(i,4) 1]';
-i = 240;
+i = 367;
 p13 = [A(i,1) A(i,2) 1]';
 p14 = [A(i,3) A(i,4) 1]';
-i = 565;
+i = 576;
 p15 = [A(i,1) A(i,2) 1]';
 p16 = [A(i,3) A(i,4) 1]';
-i = 357;
-p17 = [A(i,1) A(i,2) 1]';
-p18 = [A(i,3) A(i,4) 1]';
-i = 119;
-p19 = [A(i,1) A(i,2) 1]';
-p20 = [A(i,3) A(i,4) 1]';
 
 % Compute the lines that pass through the different pairs of points
 l1 = cross(p1, p2);
@@ -177,6 +171,14 @@ l3 = cross(p9, p10);
 m3 = cross(p11, p12);
 l4 = cross(p13, p14);
 m4 = cross(p15, p16);
+
+% Get the points in the corners of the window:
+p17 = cross(l1, m1);
+p18 = cross(l2, m2);
+p19 = cross(l1, m2);
+p20 = cross(l2, m1);
+
+% With these points, compute the diagonal lines:
 l5 = cross(p17, p18);
 m5 = cross(p19, p20);
 
