@@ -9,7 +9,7 @@ function [ H ] = homography2d( x1, x2 )
 [x2, T_out] = DLT_normalization(x2);
 
 %Second step: 
-n = size(x1, 2)
+n = size(x1, 2);
 x = x2(1, :); 
 y = x2(2,:); 
 X = x1(1,:); 
