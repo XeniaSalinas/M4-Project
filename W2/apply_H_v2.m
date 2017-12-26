@@ -43,7 +43,7 @@ HX = HX./HZ;
 HY = HY./HZ;
 
 I2 = zeros(Hnrows, Hncols, nchan);
-for c=1:nchan,
+for c=1:nchan
     I2(:,:,c) = interp2(double(I(:,:,c)),HX,HY,'linear');
 end
 

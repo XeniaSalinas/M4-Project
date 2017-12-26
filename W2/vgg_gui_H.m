@@ -25,7 +25,7 @@ else
    ud = get(gcf, 'UserData');
 end
 
-if strcmp(action,'start'),
+if strcmp(action,'start')
    if nargin ~= 3
       error('Must give 3 arguments... read the docs.\n');
    end
