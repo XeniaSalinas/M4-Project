@@ -8,9 +8,9 @@ addpath('sift');
 
 %% Open images
 
-imargb = imread('Data/llanes/llanes_a.jpg');
-imbrgb = imread('Data/llanes/llanes_b.jpg');
-imcrgb = imread('Data/llanes/llanes_c.jpg');
+% imargb = imread('Data/llanes/llanes_a.jpg');
+% imbrgb = imread('Data/llanes/llanes_b.jpg');
+% imcrgb = imread('Data/llanes/llanes_c.jpg');
 
 % imargb = imread('Data/castle_int/0016_s.png');
 % imbrgb = imread('Data/castle_int/0015_s.png');
@@ -19,17 +19,17 @@ imcrgb = imread('Data/llanes/llanes_c.jpg');
 % imargb = imread('Data/aerial/site13/frame00000.png');
 % imbrgb = imread('Data/aerial/site13/frame00002.png');
 % imcrgb = imread('Data/aerial/site13/frame00003.png');
+% 
+% ima = sum(double(imargb), 3) / 3 / 255;
+% imb = sum(double(imbrgb), 3) / 3 / 255;
+% imc = sum(double(imcrgb), 3) / 3 / 255;
 
-ima = sum(double(imargb), 3) / 3 / 255;
-imb = sum(double(imbrgb), 3) / 3 / 255;
-imc = sum(double(imcrgb), 3) / 3 / 255;
-
-% imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
-% imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
-% imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
-% ima = imargb;
-% imb = imbrgb;
-% imc = imcrgb;
+imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
+imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
+imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
+ima = imargb;
+imb = imbrgb;
+imc = imcrgb;
 
 %% Compute SIFT keypoints
 [points_a, desc_a] = sift(ima, 'Threshold', 0.01);
@@ -113,9 +113,10 @@ title('Mosaic A-B-C');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Refine the homography with the Gold Standard algorithm
 
-%% Homography ab
-x = xab_a(1:2,:);  %ToDo: set the non-homogeneous point coordinates of the 
-xp = xab_b(1:2,:); %      point correspondences we will refine with the geometric method
+% Homography ab
+
+x = points_a;  %ToDo: set the non-homogeneous point coordinates of the 
+xp = points_b; %      point correspondences we will refine with the geometric method
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hab(:) ; x(:) ];      % The parameters or independent variables
 
@@ -139,8 +140,6 @@ fprintf(1, 'Gold standard reproj error initial %f, final %f\n', err_initial, err
 
 % ToDo: compute the points xhat and xhatp which are the correspondences
 % returned by the refinement with the Gold Standard algorithm
-xhat = P * x;
-xhatp = P * xp;
 
 figure;
 imshow(imargb);%image(imargb);
@@ -156,33 +155,13 @@ plot(xhatp(1,:), xhatp(2,:),'+c');
 
 %%  Homography bc
 
-x = xab_a(1:2,:);  %ToDo: set the non-homogeneous point coordinates of the 
-xp = xab_b(1:2,:); %      point correspondences we will refine with the geometric method
-Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
-P0 = [ Hbc(:) ; x(:) ];      % The parameters or independent variables
-
-Y_initial = gs_errfunction( P0, Xobs ); % ToDo: create this function that we need to pass to the lsqnonlin function
-% NOTE: gs_errfunction should return E(X) and not the sum-of-squares E=sum(E(X).^2)) that we want to minimize. 
-% (E(X) is summed and squared implicitly in the lsqnonlin algorithm.) 
-err_initial = sum( sum( Y_initial.^2 ));
-
-options = optimset('Algorithm', 'levenberg-marquardt');
-P = lsqnonlin(@(t) gs_errfunction(t, Xobs), P0, [], [], options);
-
-Hab_r = reshape( P(1:9), 3, 3 );
-f = gs_errfunction( P, Xobs ); % lsqnonlin does not return f
-err_final = sum( sum( f.^2 ));
-
-% we show the geometric error before and after the refinement
-fprintf(1, 'Gold standard reproj error initial %f, final %f\n', err_initial, err_final);
+% ToDo: refine the homography bc with the Gold Standard algorithm
 
 
 %% See differences in the keypoint locations
 
 % ToDo: compute the points xhat and xhatp which are the correspondences
 % returned by the refinement with the Gold Standard algorithm
-xhat = P * x;
-xhatp = P * xp;
 
 figure;
 imshow(imbrgb);%image(imbrgb);
