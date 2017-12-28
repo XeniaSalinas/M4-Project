@@ -8,9 +8,9 @@ addpath('sift');
 
 %% Open images
 
-imargb = imread('Data/llanes/llanes_a.jpg');
-imbrgb = imread('Data/llanes/llanes_b.jpg');
-imcrgb = imread('Data/llanes/llanes_c.jpg');
+% imargb = imread('Data/llanes/llanes_a.jpg');
+% imbrgb = imread('Data/llanes/llanes_b.jpg');
+% imcrgb = imread('Data/llanes/llanes_c.jpg');
 
 % imargb = imread('Data/castle_int/0016_s.png');
 % imbrgb = imread('Data/castle_int/0015_s.png');
@@ -19,35 +19,45 @@ imcrgb = imread('Data/llanes/llanes_c.jpg');
 % imargb = imread('Data/aerial/site13/frame00000.png');
 % imbrgb = imread('Data/aerial/site13/frame00002.png');
 % imcrgb = imread('Data/aerial/site13/frame00003.png');
+% 
+% ima = sum(double(imargb), 3) / 3 / 255;
+% imb = sum(double(imbrgb), 3) / 3 / 255;
+% imc = sum(double(imcrgb), 3) / 3 / 255;
+% sift_threshold = 0.01;
 
-ima = sum(double(imargb), 3) / 3 / 255;
-imb = sum(double(imbrgb), 3) / 3 / 255;
-imc = sum(double(imcrgb), 3) / 3 / 255;
-
-% imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
-% imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
-% imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
-% ima = imargb;
-% imb = imbrgb;
-% imc = imcrgb;
+imargb = imread('Data/aerial/site22/frame_00001.tif');
+imbrgb = imread('Data/aerial/site22/frame_00018.tif');
+imcrgb = imread('Data/aerial/site22/frame_00030.tif');
+ima = double(imargb) / 255.;
+imb = double(imbrgb) / 255.;
+imc = double(imcrgb) / 255.;
+sift_threshold = 0.02;
 
 %% Compute SIFT keypoints
-[points_a, desc_a] = sift(ima, 'Threshold', 0.01);
-[points_b, desc_b] = sift(imb, 'Threshold', 0.01);
-[points_c, desc_c] = sift(imc, 'Threshold', 0.01);
+[points_a, desc_a] = sift(ima, 'Threshold', sift_threshold);
+[points_b, desc_b] = sift(imb, 'Threshold', sift_threshold);
+[points_c, desc_c] = sift(imc, 'Threshold', sift_threshold);
 
 figure;
-imshow(imargb);%image(imargb)
+imshow(imargb);
 hold on;
 plot(points_a(1,:), points_a(2,:),'+y');
+title('Image A keypoints');
+hold off;
+
 figure;
-imshow(imbrgb);%image(imbrgb);
+imshow(imbrgb); %image(imbrgb);
 hold on;
 plot(points_b(1,:), points_b(2,:),'+y');
+title('Image B keypoints');
+hold off;
+
 figure;
-imshow(imcrgb);%image(imcrgb);
+imshow(imcrgb); %image(imcrgb);
 hold on;
 plot(points_c(1,:), points_c(2,:),'+y');
+title('Image C keypoints');
+hold off;
 
 %% Match SIFT keypoints 
 
@@ -68,7 +78,7 @@ plotmatches(imb, imc, points_b(1:2,:), points_c(1:2,:), matches_bc, 'Stacking', 
 th = 3;
 xab_a = [points_a(1:2, matches_ab(1,:)); ones(1, length(matches_ab))];
 xab_b = [points_b(1:2, matches_ab(2,:)); ones(1, length(matches_ab))];
-[Hab, inliers_ab] = ransac_homography_adaptive_loop(xab_a, xab_b, th, 1000); % ToDo: complete this function
+[Hab, inliers_ab] = ransac_homography_adaptive_loop(xab_a, xab_b, th, 1000);
 
 figure;
 plotmatches(ima, imb, points_a(1:2,:), points_b(1:2,:), ...
@@ -92,13 +102,9 @@ vgg_gui_H(imbrgb, imcrgb, Hbc);
 %% 3. Build the mosaic
 
 corners = [-400 1200 -100 650];
-iwb = apply_H_v2(imbrgb, Hab\Hbc, corners);   % ToDo: complete the call to the function
+iwb = apply_H_v2(imbrgb, eye(3), corners);   % ToDo: complete the call to the function
 iwa = apply_H_v2(imargb, Hab, corners);    % ToDo: complete the call to the function
 iwc = apply_H_v2(imcrgb, inv(Hbc), corners);    % ToDo: complete the call to the function
-
-figure;
-imshow(max(iwc, iwa));%image(max(iwc, max(iwb, iwa)));axis off;
-title('Mosaic A-C');
 
 figure;
 imshow(max(iwc, max(iwb, iwa)));%image(max(iwc, max(iwb, iwa)));axis off;
@@ -114,8 +120,8 @@ title('Mosaic A-B-C');
 %% 4. Refine the homography with the Gold Standard algorithm
 
 %% Homography ab
-x = xab_a(1:2,:);  %ToDo: set the non-homogeneous point coordinates of the 
-xp = xab_b(1:2,:); %      point correspondences we will refine with the geometric method
+x = xab_a(1:2,:);  % Set the non-homogeneous point coordinates of the 
+xp = xab_b(1:2,:); % point correspondences we will refine with the geometric method
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hab(:) ; x(:) ];      % The parameters or independent variables
 

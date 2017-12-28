@@ -21,7 +21,7 @@ hy = [row_zeros; row_values; y.*X; y.*Y; y];
 h = [hx hy];
 [~, ~, V] = svd(h');
 v = V(:,9);
-H = vec2mat(v(:,1),3);
+H = transpose(reshape(v(:,1), [3, 3]));
 H = inv(T_out)*H*T;
 
 end
