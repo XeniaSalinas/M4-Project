@@ -1,7 +1,4 @@
-*.mex*
-*.o
 *~
-.DS_Store
 doc/*.log
 doc/*.out
 doc/*.blg

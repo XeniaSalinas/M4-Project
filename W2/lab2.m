@@ -317,23 +317,23 @@ figure; hold;
 plot_camera(K * eye(3,4), 800, 600, 200);
 % ToDo: complete the call to the following function with the proper
 %       coordinates of the image corners in the new reference system
-for i = 1:N
-    vgg_scatter_plot( [...   ...   ...   ...   ...], 'r');
-end
+% for i = 1:N
+%     vgg_scatter_plot( [...   ...   ...   ...   ...], 'r');
+% end
 
 %% Augmented reality: Plot some 3D points on every camera.
-[Th, Tw] = size(Tg);
-cube = [0 0 0; 1 0 0; 1 0 0; 1 1 0; 1 1 0; 0 1 0; 0 1 0; 0 0 0; 0 0 1; 1 0 1; 1 0 1; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 0 1; 0 0 0; 1 0 0; 1 0 0; 1 0 1; 1 0 1; 0 0 1; 0 0 1; 0 0 0; 0 1 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 1 0; 0 0 0; 0 1 0; 0 1 0; 0 1 1; 0 1 1; 0 0 1; 0 0 1; 0 0 0; 1 0 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 1 0 1; 1 0 1; 1 0 0 ]';
-
-X = (cube - .5) * Tw / 4 + repmat([Tw / 2; Th / 2; -Tw / 8], 1, length(cube));
-
-for i = 1:N
-    figure; colormap(gray);
-    imagesc(Ig{i});
-    hold on;
-    x = euclid(P{i} * homog(X));
-    vgg_scatter_plot(x, 'g');
-end
+% [Th, Tw] = size(Tg);
+% cube = [0 0 0; 1 0 0; 1 0 0; 1 1 0; 1 1 0; 0 1 0; 0 1 0; 0 0 0; 0 0 1; 1 0 1; 1 0 1; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 0 1; 0 0 0; 1 0 0; 1 0 0; 1 0 1; 1 0 1; 0 0 1; 0 0 1; 0 0 0; 0 1 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 1 0; 0 0 0; 0 1 0; 0 1 0; 0 1 1; 0 1 1; 0 0 1; 0 0 1; 0 0 0; 1 0 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 1 0 1; 1 0 1; 1 0 0 ]';
+% 
+% X = (cube - .5) * Tw / 4 + repmat([Tw / 2; Th / 2; -Tw / 8], 1, length(cube));
+% 
+% for i = 1:N
+%     figure; colormap(gray);
+%     imagesc(Ig{i});
+%     hold on;
+%     x = euclid(P{i} * homog(X));
+%     vgg_scatter_plot(x, 'g');
+% end
 
 
 
