@@ -8,7 +8,7 @@ best_inliers = [];
 while it < max_it
     
     points = randomsample(Npoints, 4);
-    H = homography2d(x1(:,points), x2(:,points)); % ToDo: you have to create this function
+    H = homography2d(x1(:,points), x2(:,points));
     inliers = compute_inliers(H, x1, x2, th);
     
     % test if it is the best model so far
