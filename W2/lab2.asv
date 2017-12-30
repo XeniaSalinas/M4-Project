@@ -266,9 +266,7 @@ for i = 1:N
     x1 = pointsT(1:2, matches(1, :));
     x2 = points{i}(1:2, matches(2, :));
     H{i} = 0;
-    x1_h = transpose(cart2hom(transpose(x1)));
-    x2_h = transpose(cart2hom(transpose(x2)));
-    [H{i}, inliers] =  ransac_homography_adaptive_loop(x1_h, x2_h, 3, 1000);
+    [H{i}, inliers] =  ransac_homography_adaptive_loop(homog(x1), homog(x2), 3, 1000);
 
     % Plot inliers.
     figure;
@@ -280,16 +278,12 @@ end
 
 %% Compute the Image of the Absolute Conic
 V = zeros(2*N,6);
-row = 1;
-for i = 1:N
-    for j = 1:N
-        V(row,:) = [transpose(H{i}(:,1))*H{j}(:,1), ...
-            transpose(H{i}(:,1))*H{j}(:,2) + transpose(H{i}(:,2))*H{j}(:,1), ...
-            transpose(H{i}(:,1))*H{j}(:,3) + transpose(H{i}(:,3))*H{j}(:,1), ...
-            transpose(H{i}(:,2))*H{j}(:,2), ...
-            transpose(H{i}(:,2))*H{j}(:,3) + transpose(H{i}(:,3))*H{j}(:,2), ...
-            transpose(H{i}(:,3))*H{j}(:,3)];
-        row = row + 1;
+
+for i = 1:2*N
+    for j = 1:6
+        V(i,j) = [H{i}(:,1)*H{j}(:,1), H{i}(:,1)*H{j}(:,2)+H{i}(:,2)*H{j}(:,1), ...
+            H{i}(:,1)*H{j}(:,3)+H{i}(:,3)*H{j}(:,1), H{i}(:,2)*H{j}(:,2), ...
+            H{i}(:,2)*H{j}(:,3)+H{i}(:,3)*H{j}(:,2), H{i}(:,3)*H{j}(:,3)];
     end
 end
 
@@ -353,7 +347,7 @@ plot_camera(K * eye(3,4), 800, 600, 200);
 % ToDo: complete the call to the following function with the proper
 %       coordinates of the image corners in the new reference system
 for i = 1:N
-    vgg_scatter_plot( [K*p1   K*p2   K*p3   K*p4   K*p1], 'r');
+    vgg_scatter_plot( [0   1   2   3   4], 'r');
 end
 
 %% Augmented reality: Plot some 3D points on every camera.
