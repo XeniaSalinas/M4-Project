@@ -1,2 +1,5 @@
 # Ignore all pdfs
 *.pdf
+
+# Temporal MATLAB files
+*.asv
