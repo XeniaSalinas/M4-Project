@@ -8,30 +8,40 @@ addpath('sift');
 
 %% Open images
 
-% imargb = imread('Data/llanes/llanes_a.jpg');
-% imbrgb = imread('Data/llanes/llanes_b.jpg');
-% imcrgb = imread('Data/llanes/llanes_c.jpg');
+image_set = 'aerial13'; %Image set selection. Values: 'llanes', 'castle', 'aerial13', 'aerial22'
 
-imargb = imread('Data/castle_int/0016_s.png');
-imbrgb = imread('Data/castle_int/0015_s.png');
-imcrgb = imread('Data/castle_int/0014_s.png');
+switch image_set
+   case 'llanes'
+      imargb = imread('Data/llanes/llanes_a.jpg');
+      imbrgb = imread('Data/llanes/llanes_b.jpg');
+      imcrgb = imread('Data/llanes/llanes_c.jpg');
+   case 'castle'
+      imargb = imread('Data/castle_int/0016_s.png');
+      imbrgb = imread('Data/castle_int/0015_s.png');
+      imcrgb = imread('Data/castle_int/0014_s.png');
+   case 'aerial13'
+      imargb = imread('Data/aerial/site13/frame00000.png');
+      imbrgb = imread('Data/aerial/site13/frame00002.png');
+      imcrgb = imread('Data/aerial/site13/frame00003.png');
+   otherwise
+      imargb = imread('Data/aerial/site22/frame_00001.tif');
+      imbrgb = imread('Data/aerial/site22/frame_00018.tif');
+      imcrgb = imread('Data/aerial/site22/frame_00030.tif');
+end
 
-% imargb = imread('Data/aerial/site13/frame00000.png');
-% imbrgb = imread('Data/aerial/site13/frame00002.png');
-% imcrgb = imread('Data/aerial/site13/frame00003.png');
+switch image_set
+   case 'aerial22'
+      ima = double(imargb) / 255.;
+      imb = double(imbrgb) / 255.;
+      imc = double(imcrgb) / 255.;
+      sift_threshold = 0.02;
+   otherwise
+      ima = sum(double(imargb), 3) / 3 / 255;
+      imb = sum(double(imbrgb), 3) / 3 / 255;
+      imc = sum(double(imcrgb), 3) / 3 / 255;
+      sift_threshold = 0.01;
 
-ima = sum(double(imargb), 3) / 3 / 255;
-imb = sum(double(imbrgb), 3) / 3 / 255;
-imc = sum(double(imcrgb), 3) / 3 / 255;
-sift_threshold = 0.01;
-
-% imargb = imread('Data/aerial/site22/frame_00001.tif');
-% imbrgb = imread('Data/aerial/site22/frame_00018.tif');
-% imcrgb = imread('Data/aerial/site22/frame_00030.tif');
-% ima = double(imargb) / 255.;
-% imb = double(imbrgb) / 255.;
-% imc = double(imcrgb) / 255.;
-% sift_threshold = 0.02;
+end
 
 %% Compute SIFT keypoints
 [points_a, desc_a] = sift(ima, 'Threshold', sift_threshold);
@@ -101,7 +111,17 @@ vgg_gui_H(imbrgb, imcrgb, Hbc);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Build the mosaic
 
-corners = [-400 1200 -100 650];
+switch image_set
+   case 'llanes'
+      corners = [-400 1200 -100 650];
+   case 'castle'
+      corners = [-600 1600 -300 800];
+   case 'aerial13'
+      corners = [-300 1300 -100 1000];
+   otherwise
+      corners = [-400 1500 -100 1100];
+end
+
 iwb = apply_H_v2(imbrgb, eye(3), corners);      % leave B unchanged   
 iwa = apply_H_v2(imargb, Hab, corners);         % apply homography A --> B
 iwc = apply_H_v2(imcrgb, inv(Hbc), corners);    % apply homography C --> B
@@ -236,7 +256,18 @@ title('Image C, original (yellow) vs refined (blue) correspondences');
 hold off;
 
 %% Build mosaic
-corners = [-400 1200 -100 650];
+
+switch image_set
+   case 'llanes'
+      corners = [-400 1200 -100 650];
+   case 'castle'
+      corners = [-600 1600 -300 800];
+   case 'aerial13'
+      corners = [-300 1300 -100 1000];
+   otherwise
+      corners = [-400 1500 -100 1100];
+end
+
 iwb = apply_H_v2(imbrgb, eye(3), corners); 
 iwa = apply_H_v2(imargb, Hab_r, corners); 
 iwc = apply_H_v2(imcrgb, inv(Hbc_r), corners); 
