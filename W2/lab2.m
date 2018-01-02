@@ -402,10 +402,90 @@ end
 %% 6. OPTIONAL: Detect the UPF logo in the two UPF images using the 
 %%              DLT algorithm (folder "logos").
 %%              Interpret and comment the results.
+logoUPF = imread('Data/logos/logoUPF.png');
+im = imread('Data/logos/UPFstand.jpg');
+% im = imread('Data/logos/UPFbuilding.jpg');
+
+logo_d = sum(double(logoUPF), 3) / 3 / 255;
+im_d = sum(double(im), 3) / 3 / 255;
+sift_threshold = 0.01;
+
+% Compute SIFT keypoints
+[points_logo, desc_logo] = sift(logo_d, 'Threshold', sift_threshold);
+[points_im, desc_im] = sift(im_d, 'Threshold', sift_threshold);
+
+figure;
+imshow(logo_d);
+hold on;
+plot(points_logo(1,:), points_logo(2,:),'+y');
+title('Logo keypoints');
+hold off;
+
+figure;
+imshow(im); %image(imbrgb);
+hold on;
+plot(points_im(1,:), points_im(2,:),'+y');
+title('Image keypoints');
+hold off;
+
+% Match SIFT keypoints
+matches = siftmatch(desc_logo, desc_im);
+figure;
+plotmatches(logo_d, im_d, points_logo(1:2,:), points_im(1:2,:), matches, 'Stacking', 'v');
+
+% Compute the homography (DLT algorithm) between image pairs
+th = 3;
+x_logo = transpose(cart2hom(transpose(points_logo(1:2, matches(1,:)))));
+x_im = transpose(cart2hom(transpose(points_im(1:2, matches(2,:)))));
+[H, inliers] = ransac_homography_adaptive_loop(x_logo, x_im, th, 1000);
+
+figure;
+plotmatches(logo_d, im_d, points_logo(1:2,:), points_im(1:2,:), ...
+    matches(:,inliers), 'Stacking', 'v');
+
+vgg_gui_H(logoUPF, im, H);
+
+%Compute logo lines
+[N,M,~] = size(logoUPF);
+corner1 = H*[1;1;1];
+corner2 = H*[1;M;1];
+corner3 = H*[N;1;1];
+corner4 = H*[N;M;1];
+
+% Draw detection
+figure;
+imshow(im);
+line([corner1(1)/corner1(3) corner2(1)/corner2(3)],[corner1(2)/corner1(3) corner2(2)/corner2(3)],'Color','y');
+line([corner1(1)/corner1(3) corner3(1)/corner3(3)],[corner1(2)/corner1(3) corner3(2)/corner3(3)],'Color','y');
+line([corner2(1)/corner2(3) corner4(1)/corner4(3)],[corner2(2)/corner2(3) corner4(2)/corner4(3)],'Color','y');
+line([corner3(1)/corner3(3) corner4(1)/corner4(3)],[corner3(2)/corner3(3) corner4(2)/corner4(3)],'Color','y');
+title('Detected logo');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 7. OPTIONAL: Replace the logo of the UPF by the master logo
 %%              in one of the previous images using the DLT algorithm.
+logoMaster = imread('Data/logos/logo_master.png');
+% [Nupf,Mupf,~] = size(logoUPF);
+% logoMaster = imresize(logoMaster, [Nupf,Mupf]);
+%Compute scale factor
+[Nupf,Mupf,~] = size(logoUPF);
+[Nmaster,Mmaster,~] = size(logoMaster);
+H2 = H;
+% H2(1,1) = Mupf/Mmaster*H2(1,1);
+% H2(2,2) = Nupf/Nmaster*H2(2,2);
 
+% H2(1,1) = Mmaster/Mupf*H2(1,1);
+% H2(2,2) = Nmaster/Nupf*H2(2,2);
 
+% H2(1,1) = Nupf/Nmaster*H2(1,1);
+% H2(2,2) = Mupf/Mmaster*H2(2,2);
 
+H2(1,1) = Nmaster/Nupf*H2(1,1);
+H2(2,2) = Mmaster/Mupf*H2(2,2);
+
+[Nim,Mim,~] = size(im);
+iw_logo = apply_H_v2(logoMaster, H2, [1 Mim 1 Nim]); 
+
+figure;
+imshow(max(im, iw_logo))
+title('Logo replacement');
