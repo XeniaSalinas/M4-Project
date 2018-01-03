@@ -427,8 +427,6 @@ for i = 1:N
     vgg_scatter_plot(x, 'g');
 end
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. OPTIONAL: Detect the UPF logo in the two UPF images using the 
 %%              DLT algorithm (folder "logos").
@@ -474,7 +472,7 @@ figure;
 plotmatches(logo_d, im_d, points_logo(1:2,:), points_im(1:2,:), ...
     matches(:,inliers), 'Stacking', 'v');
 
-vgg_gui_H(logoUPF, im, H);
+%vgg_gui_H(logoUPF, im, H);
 
 %Compute logo lines
 [N,M,~] = size(logoUPF);
@@ -482,41 +480,36 @@ corner1 = H*[1;1;1];
 corner2 = H*[1;M;1];
 corner3 = H*[N;1;1];
 corner4 = H*[N;M;1];
-
+corner1 = corner1/corner1(3);
+corner2 = corner2/corner2(3);
+corner3 = corner3/corner3(3);
+corner4 = corner4/corner4(3);
 % Draw detection
 figure;
 imshow(im);
-line([corner1(1)/corner1(3) corner2(1)/corner2(3)],[corner1(2)/corner1(3) corner2(2)/corner2(3)],'Color','y');
-line([corner1(1)/corner1(3) corner3(1)/corner3(3)],[corner1(2)/corner1(3) corner3(2)/corner3(3)],'Color','y');
-line([corner2(1)/corner2(3) corner4(1)/corner4(3)],[corner2(2)/corner2(3) corner4(2)/corner4(3)],'Color','y');
-line([corner3(1)/corner3(3) corner4(1)/corner4(3)],[corner3(2)/corner3(3) corner4(2)/corner4(3)],'Color','y');
+line([corner1(1) corner2(1)],[corner1(2) corner2(2)],'Color','y');
+line([corner1(1) corner3(1)],[corner1(2) corner3(2)],'Color','y');
+line([corner2(1) corner4(1)],[corner2(2) corner4(2)],'Color','y');
+line([corner3(1) corner4(1)],[corner3(2) corner4(2)],'Color','y');
 title('Detected logo');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 7. OPTIONAL: Replace the logo of the UPF by the master logo
 %%              in one of the previous images using the DLT algorithm.
 logoMaster = imread('Data/logos/logo_master.png');
-% [Nupf,Mupf,~] = size(logoUPF);
-% logoMaster = imresize(logoMaster, [Nupf,Mupf]);
-%Compute scale factor
-[Nupf,Mupf,~] = size(logoUPF);
 [Nmaster,Mmaster,~] = size(logoMaster);
-H2 = H;
-% H2(1,1) = Mupf/Mmaster*H2(1,1);
-% H2(2,2) = Nupf/Nmaster*H2(2,2);
+[Nupf,Mupf,~] = size(logoUPF);
 
-% H2(1,1) = Mmaster/Mupf*H2(1,1);
-% H2(2,2) = Nmaster/Nupf*H2(2,2);
+S = eye(size(H));
+S(1,1)= (Mupf/Mmaster);
+S(2,2) = (Nupf/Nmaster);
 
-% H2(1,1) = Nupf/Nmaster*H2(1,1);
-% H2(2,2) = Mupf/Mmaster*H2(2,2);
 
-H2(1,1) = Nmaster/Nupf*H2(1,1);
-H2(2,2) = Mmaster/Mupf*H2(2,2);
-
-[Nim,Mim,~] = size(im);
-iw_logo = apply_H_v2(logoMaster, H2, [1 Mim 1 Nim]); 
-
+H2 = H*S;
+corners = [1, size(im, 2), 1, size(im, 1)];
+iw_logo = apply_H_v2(logoMaster, H2, corners); 
+mask = iw_logo<1;
+replacement = im.*uint8(mask) + iw_logo.*uint8(1-mask);
 figure;
-imshow(max(im, iw_logo))
+imshow(replacement)
 title('Logo replacement');
