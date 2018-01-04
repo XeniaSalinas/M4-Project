@@ -343,10 +343,11 @@ for n = 1:N
     % Compute row vector V22 (i=2, j=2)
     v22_t = compute_row_absolute_conic(H{n}, 2, 2);
     
-    % 2 equations for homography n
-    row = 2*(n-1)+1;
-    V(row,:) = v12_t;
-    V(row+1,:) = v11_t - v22_t;
+    % 2 equations for homography n:
+     row = 2*n - 1;
+     V(row,:) = v12_t;
+     row = 2*n;
+     V(row,:) = v11_t - v22_t;
 end
 
 [U,D,Uhat] = svd(V); 
@@ -358,7 +359,7 @@ w =[omega(1) omega(2) omega(3);
  
 %% Recover the camera calibration.
 
-K = chol(w); 
+K = chol(inv(w)); 
     
 % ToDo: in the report make some comments related to the obtained internal
 %       camera parameters and also comment their relation to the image size
@@ -370,9 +371,9 @@ P = cell(N,1);
 figure;hold;
 for i = 1:N
     % ToDo: compute r1, r2, and t{i}
-    r1 = K\H{1}(:,1);
-    r2 = K\H{1}(:,2);
-    t{i} = K\H{1}(:,3);
+    r1 = K\H{i}(:,1) / norm(K\H{i}(:,1));
+    r2 = K\H{i}(:,2) / norm(K\H{i}(:,2));
+    t{i} = K\H{i}(:,3) / norm(K\H{i}(:,1));
     
     % Solve the scale ambiguity by forcing r1 and r2 to be unit vectors.
     s = sqrt(norm(r1) * norm(r2)) * sign(t{i}(3));
@@ -410,7 +411,7 @@ plot_camera(K * eye(3,4), 800, 600, 200);
 % ToDo: complete the call to the following function with the proper
 %       coordinates of the image corners in the new reference system
 for i = 1:N
-    vgg_scatter_plot( [K*p1   K*p2   K*p3   K*p4   K*p1], 'r');
+    vgg_scatter_plot( [K*P{i}*[p1;1]   K*P{i}*[p2;1]   K*P{i}*[p3;1]   K*P{i}*[p4;1]   K*P{i}*[p1;1]], 'r');
 end
 
 %% Augmented reality: Plot some 3D points on every camera.
