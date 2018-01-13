@@ -114,6 +114,8 @@ plot_homog_line(l1(:, m2), 'r');
 plot(p1(1, m3), p1(2, m3), '+g');
 plot_homog_line(l1(:, m3), 'b');
 
+title('Epipolar lines (image 1)');
+
 % image 2 (plot the three points and their corresponding epipolar lines)
 figure(5);
 imshow(im2rgb);
@@ -126,6 +128,8 @@ plot_homog_line(l2(:, m2), 'r');
 
 plot(p2(1, m3), p2(2, m3), '+g');
 plot_homog_line(l2(:, m3), 'b');
+
+title('Epipolar lines (image 2)');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Photo-sequencing with aerial images
