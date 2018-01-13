@@ -14,14 +14,9 @@ N = size(x1_norm, 2);
 
 %W = zeros(N,9);
 W = [x1.*x2 y1.*x2 x2 x1.*y2 y1.*y2 y2 x1 y1 ones(N, 1)];
-% for i=1:N
-%     W(i, :) = [x1_norm(1,i)*x2_norm(1,i), x1_norm(2,i)*x2_norm(1,i), x2_norm(1,i),...
-%         x1_norm(1,i)*x2_norm(2,i), x1_norm(2,i)*x2_norm(2,i), x2_norm(2,i),... 
-%         x1_norm(1,i), x1_norm(2,i), 1];
-% end
 
 % Singular Value Decomposition of W
-[U, D, V] = svd(W);
+[~, ~, V] = svd(W);
 
 % F is the last column of V
 f = V(:,end);
