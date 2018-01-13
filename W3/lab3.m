@@ -26,8 +26,8 @@ F_es = fundamental_matrix(x1_test, x2_test);
 % K and K_ should be I as P1 = K[I | 0] = I and P2 = K_[R | t] = [R | t], 
 % but let's compute them:
 % get K and K' from the QR decomposition of P1 and P2:
-[Q, K] = qr(P1(:,1:end-1));
-[Q, K_] = qr(P2(:,1:end-1));
+[~, K] = qr(P1(:,1:end-1));
+[~, K_] = qr(P2(:,1:end-1));
 %enforce that K and K_ have positive diagonal entries
 D = diag(sign(diag(K)));
 D_ = diag(sign(diag(K_)));
@@ -38,10 +38,15 @@ Tx = [0, -t(3), t(2); t(3), 0, -t(1);-t(2), t(1), 0];
 
 F_gt = inv(K_)'*(Tx*R)*inv(K); % ToDo: write the expression of the real fundamental matrix for P1 and P2
 
-% Evaluation: these two matrices should be very similar
-F_gt / norm(F_gt)
-F_es / norm(F_es)
+% Evaluation: these two (normalized) matrices should be very similar
+norm_F_gt = F_gt / norm(F_gt);
+norm_F_es = F_es / norm(F_es);
 
+if norm(norm_F_gt - norm_F_es) < 0.1
+    disp('Ground-truth and estimated fundamental matrix are similar');
+else
+    warning('Ground-truth and estimated fundamental matrix are different');
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Robustly fit fundamental matrix
@@ -87,39 +92,42 @@ vgg_gui_F(im1rgb, im2rgb, F');
 
 %% Plot some epipolar lines
 
-l2 = F*p1 % epipolar lines in image 2 % ToDo
-l1 = F'*p2 % epipolar lines in image 1 % ToDo
+l2 = F*p1; % epipolar lines in image 2 
+l1 = F'*p2; % epipolar lines in image 1
 
 % choose three random indices
-m1 = inliers(10);
-m2 = inliers(20);
-m3 = inliers(30);
+permuted_inliers = inliers(randperm(length(inliers)));
+m1 = permuted_inliers(1);
+m2 = permuted_inliers(2);
+m3 = permuted_inliers(3);
 
 % image 1 (plot the three points and their corresponding epipolar lines)
 figure;
 imshow(im1rgb);
 hold on;
 plot(p1(1, m1), p1(2, m1), '+g');
-plot_homog_line(l1(:, m1));
+plot_homog_line(l1(:, m1), 'y');
 
 plot(p1(1, m2), p1(2, m2), '+g');
-plot_homog_line(l1(:, m2));
+plot_homog_line(l1(:, m2), 'r');
 
 plot(p1(1, m3), p1(2, m3), '+g');
-plot_homog_line(l1(:, m3));
+plot_homog_line(l1(:, m3), 'b');
+hold off;
 
 % image 2 (plot the three points and their corresponding epipolar lines)
 figure;
 imshow(im2rgb);
 hold on;
 plot(p2(1, m1), p2(2, m1), '+g');
-plot_homog_line(l2(:, m1));
+plot_homog_line(l2(:, m1), 'y');
 
 plot(p2(1, m2), p2(2, m2), '+g');
-plot_homog_line(l2(:, m2));
+plot_homog_line(l2(:, m2), 'r');
 
 plot(p2(1, m3), p2(2, m3), '+g');
-plot_homog_line(l2(:, m3));
+plot_homog_line(l2(:, m3), 'b');
+hold off;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

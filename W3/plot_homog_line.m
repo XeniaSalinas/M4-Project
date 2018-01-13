@@ -1,6 +1,11 @@
 % Plot the homogeneous line l (3 dimensional array) in yellow
 
-function plot_homog_line(l)
+function plot_homog_line(l, color)
+
+if nargin == 1
+   % default color = yellow
+   color = 'y';
+end
 
 if(abs(l(1)) > abs(l(2))) % line is more vertical
     ylim = get(get(gcf,'CurrentAxes'), 'Ylim');
@@ -20,4 +25,4 @@ P2 = P2/P2(3);
     
 % plot the line that joins points P1 and P2
 hl = line([P1(1); P2(1)],[P1(2); P2(2)]);
-set(hl,'color','y');
+set(hl, 'color', color);
