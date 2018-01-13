@@ -37,11 +37,6 @@ idx_inliers = best_inliers;
 end
 
 function idx_inliers = compute_inliers(F, x1, x2, th)
-    % Check that F is invertible
-    if abs(log(cond(F))) > 15
-        idx_inliers = [];
-        return
-    end
     
     % transformed points (in both directions)
     Fx1 = F * x1;
