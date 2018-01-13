@@ -1,18 +1,24 @@
-function F = fundamental_matrix(x1, x2)
+function F = fundamental_matrix(x1_test, x2_test)
 
 % Normalize the input points and get H and H'
-[x1_norm, H1] = normalise2dpts(x1);
-[x2_norm, H2] = normalise2dpts(x2);
+[x1_norm, H1] = normalise2dpts(x1_test);
+[x2_norm, H2] = normalise2dpts(x2_test);
 
+x1 = x1_norm(1,:)';
+y1 = x1_norm(2,:)';
+
+x2 = x2_norm(1,:)';
+y2 = x2_norm(2,:)';
 %Total points (8 correspondences)
 N = size(x1_norm, 2);
 
-W = zeros(N,9);
-for i=1:N
-    W(i, :) = [x1_norm(1,i)*x2_norm(1,i), x1_norm(2,i)*x2_norm(1,i), x2_norm(1,i),...
-        x1_norm(1,i)*x2_norm(2,i), x1_norm(2,i)*x2_norm(2,i), x2_norm(2,i),... 
-        x1_norm(1,i), x1_norm(2,i), 1];
-end
+%W = zeros(N,9);
+W = [x1.*x2 y1.*x2 x2 x1.*y2 y1.*y2 y2 x1 y1 ones(N, 1)];
+% for i=1:N
+%     W(i, :) = [x1_norm(1,i)*x2_norm(1,i), x1_norm(2,i)*x2_norm(1,i), x2_norm(1,i),...
+%         x1_norm(1,i)*x2_norm(2,i), x1_norm(2,i)*x2_norm(2,i), x2_norm(2,i),... 
+%         x1_norm(1,i), x1_norm(2,i), 1];
+% end
 
 % Singular Value Decomposition of W
 [U, D, V] = svd(W);
