@@ -131,6 +131,42 @@ plot_homog_line(l2(:, m3), 'b');
 
 title('Epipolar lines (image 2)');
 
+%% Compare RANSAC with non-robust version of 8-point algorithm
+F_no_robust = fundamental_matrix(p1, p2);
+
+l2_no_robust = F_no_robust*p1;  % epipolar lines in image 2 using 8-point, no RANSAC
+l1_no_robust = F_no_robust'*p2; % epipolar lines in image 1 using 8-point, no RANSAC
+
+% image 1
+figure(6);
+imshow(im1rgb);
+hold on;
+plot(p1(1, m1), p1(2, m1), '+g');
+plot_homog_line(l1_no_robust(:, m1), 'y');
+
+plot(p1(1, m2), p1(2, m2), '+g');
+plot_homog_line(l1_no_robust(:, m2), 'r');
+
+plot(p1(1, m3), p1(2, m3), '+g');
+plot_homog_line(l1_no_robust(:, m3), 'b');
+
+title('Epipolar lines, not RANSAC (image 1)');
+
+% image 2
+figure(7);
+imshow(im2rgb);
+hold on;
+plot(p2(1, m1), p2(2, m1), '+g');
+plot_homog_line(l2_no_robust(:, m1), 'y');
+
+plot(p2(1, m2), p2(2, m2), '+g');
+plot_homog_line(l2_no_robust(:, m2), 'r');
+
+plot(p2(1, m3), p2(2, m3), '+g');
+plot_homog_line(l2_no_robust(:, m3), 'b');
+
+title('Epipolar lines, not RANSAC (image 2)');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Photo-sequencing with aerial images
 
@@ -158,7 +194,7 @@ im3 = sum(double(im3rgb), 3) / 3 / 255;
 im4 = sum(double(im4rgb), 3) / 3 / 255;
 
 % show images
-figure(6);
+figure(8);
 subplot(2,2,1); imshow(im1rgb); axis image; title('Image 1');
 subplot(2,2,2); imshow(im2rgb); axis image; title('Image 2');
 subplot(2,2,3); imshow(im3rgb); axis image; title('Image 3');
@@ -180,7 +216,7 @@ p1 = [points_1(1:2, matches_2(1,:)); ones(1, length(matches_2))];
 p2 = [points_2(1:2, matches_2(2,:)); ones(1, length(matches_2))];
 [F_2, inliers_2] = ransac_fundamental_matrix(p1, p2, 2.0, 1000); 
 % show inliers
-figure(7);
+figure(9);
 plotmatches(im1, im2, points_1(1:2,:), points_2(1:2,:), matches_2(:,inliers_2), 'Stacking', 'v');
 title('Inliers 1 and 2');
 
@@ -189,7 +225,7 @@ p1 = [points_1(1:2, matches_3(1,:)); ones(1, length(matches_3))];
 p3 = [points_3(1:2, matches_3(2,:)); ones(1, length(matches_3))];
 [F_3, inliers_3] = ransac_fundamental_matrix(p1, p3, 2.0, 1000);
 % show inliers
-figure(8);
+figure(10);
 plotmatches(im1, im3, points_1(1:2,:), points_3(1:2,:), matches_3(:,inliers_3), 'Stacking', 'v');
 title('Inliers 1 and 3');
 
@@ -198,7 +234,7 @@ p1 = [points_1(1:2, matches_4(1,:)); ones(1, length(matches_4))];
 p4 = [points_4(1:2, matches_4(2,:)); ones(1, length(matches_4))];
 [F_4, inliers_4] = ransac_fundamental_matrix(p1, p4, 2.0, 1000); 
 % show inliers
-figure(9);
+figure(11);
 plotmatches(im1, im4, points_1(1:2,:), points_4(1:2,:), matches_4(:,inliers_4), 'Stacking', 'v');
 title('Inliers 1 and 4');
 
@@ -221,7 +257,7 @@ point1_2 = [334 697 1]'; % (this is a given data)
 % (it is the line that joins point1_1 and point1_2)
 l1 = cross(point1_1, point1_2);% ToDo: compute the line
 % plot the line
-figure(10);
+figure(12);
 imshow(im1);
 hold on;
 t=1:0.1:1000;

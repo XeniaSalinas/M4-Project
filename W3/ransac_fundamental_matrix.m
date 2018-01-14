@@ -53,7 +53,7 @@ function idx_inliers = compute_inliers(F, x1, x2, th)
         x2tFx1(i)=(x2(:,i)'*Fx1(:,i));
     end
     x2tFx1=x2tFx1.^2;
-    % compute the symmetric geometric error
+    % compute the Sampson distance
     d2 = x2tFx1./(Fx1(1,:).^2 + Fx1(2,:).^2 + Ftx2(1,:).^2 + Ftx2(2,:).^2);
     idx_inliers = find(d2 < th.^2);
 
