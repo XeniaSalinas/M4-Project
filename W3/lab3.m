@@ -310,7 +310,7 @@ clear all;
 im1rgb = imread('Data/Photo_seq/IMG_20180116_122901.jpg'); %Reference image
 im2rgb = imread('Data/Photo_seq/IMG_20180116_122909.jpg'); %Same point of view
 im3rgb = imread('Data/Photo_seq/IMG_20180116_122927.jpg');
-im4rgb = imread('Data/Photo_seq/IMG_20180116_122937.jpg');
+im4rgb = imread('Data/Photo_seq/IMG_20180116_122944.jpg');
 
 im1 = sum(double(im1rgb), 3) / 3 / 255;
 im2 = sum(double(im2rgb), 3) / 3 / 255;
