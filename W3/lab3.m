@@ -296,7 +296,7 @@ pi4 = cross(l1, l4);
 plot(pi4(1)/pi4(3), pi4(2)/pi4(3), 'g*', 'DisplayName', 'Van (image 4)');
 
 % Plot legend
-legend();
+legend('show');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. OPTIONAL: Photo-sequencing with your own images
@@ -369,70 +369,68 @@ title('Inliers 1 and 4');
 % Error between estimates and observations
 dist = sqrt((points_1(1,matches_2(1,:))-points_2(1,matches_2(2,:))).^2 + ...
     (points_1(2,matches_2(1,:))-points_2(2,matches_2(2,:))).^2);
-dynamic = dist > 33;
+dynamic = dist > mean(dist);
 %show points
 figure(17);
 imshow(im1);
 hold on;
-plot(points_1(1,matches_2(1,:)),points_1(2,matches_2(1,:)), 'y*');
-plot(points_2(1,matches_2(2,not(dynamic))), points_2(2,matches_2(2,not(dynamic))), 'b*');
-plot(points_2(1,matches_2(2,dynamic)), points_2(2,matches_2(2,dynamic)), 'r*');
-
-%% Plot the trajectory (keypoint idx_girl_I1 in image 1)
-
-idx_doll_I1 = 1062;
-idx_doll_I2 = matches_2(2,matches_2(1,:)==idx_doll_I1); % ToDo: identify the corresponding point of idx_girl_I1 in image 2
-idx_doll_I3 = matches_3(2,matches_3(1,:)==idx_doll_I1); % ToDo: identify the corresponding point of idx_girl_I1 in image 3
-idx_doll_I4 = matches_4(2,matches_4(1,:)==idx_doll_I1); % ToDo: identify the corresponding point of idx_girl_I1 in image 4
-
-% coordinates (in image 1) of the keypoint idx_car_I1 (point in a van). 
-% point1_1 is the projection of a 3D point in the 3D trajectory of the van
-point1_1 = [points_1(1:2,idx_doll_I1)' 1]';
-% coordinates (in image 1) of another 3D point in the same 3D trajectory of
-% the doll
-point1_2 = [points_2(1:2,idx_doll_I2)' 1]';
-
-% l1 is the projection of the 3D trajectory of keypoint idx_car_I1
-% (it is the line that joins point1_1 and point1_2)
-l1 = cross(point1_1, point1_2);% ToDo: compute the line
-% plot the line
-figure(18);
-imshow(im1);
-hold on;
-t=1:0.1:1000;
-plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y', 'DisplayName', 'Doll trajectory');
-plot(points_1(1, idx_doll_I1), points_1(2, idx_doll_I1), 'y*', 'DisplayName', 'Doll (image 1)');
-
-% ToDo: write the homogeneous coordinates of the corresponding point of idx_car_I2 in image 2
-point2 = [points_2(1:2,idx_doll_I2)' 1]';
-% ToDo: compute the epipolar line of point2 in the reference image
-l2 = F_2' * point2;
-% plot the epipolar line
-plot(t, -(l2(1)*t + l2(3)) / l2(2), 'c', 'DisplayName', 'Epipolar line (image 2)');
-% ToDo: compute the projection of point idx_car_I2 in the reference image 
-pi2 = cross(l1, l2);
-% plot this point
-plot(pi2(1)/pi2(3), pi2(2)/pi2(3), 'c*', 'DisplayName', 'Doll (image 2)');
-
-% ToDo: write the homogeneous coordinates of the corresponding point of idx_girl_I3 in image 3
-point3 = [points_3(1:2,idx_doll_I3)' 1]';
-% ToDo: compute the epipolar line of point3 in the reference image
-l3 = F_3' * point3;
-% plot the epipolar line
-plot(t, -(l3(1)*t + l3(3)) / l3(2), 'b', 'DisplayName', 'Epipolar line (image 3)');
-% ToDo: compute the projection of point idx_car_I3 in the reference image
-pi3 = cross(l1, l3);
-plot(pi3(1)/pi3(3), pi3(2)/pi3(3), 'b*', 'DisplayName', 'Doll (image 3)');
-
-% ToDo: write the homogeneous coordinates of the corresponding point of idx_girl_I4 in image 4
-point4 = [points_4(1:2,idx_doll_I4)' 1]';
-% ToDo: compute the epipolar line of point4 in the reference image
-l4 = F_4' * point4;
-% plot the epipolar line
-plot(t, -(l4(1)*t + l4(3)) / l4(2), 'g', 'DisplayName', 'Epipolar line (image 4)');
-% ToDo: compute the projection of point idx_car_I4 in the reference image
-pi4 = cross(l1, l4);
-plot(pi4(1)/pi4(3), pi4(2)/pi4(3), 'g*', 'DisplayName', 'Doll (image 4)');
-
+plot(points_1(1,matches_2(1,:)),points_1(2,matches_2(1,:)), 'y*','DisplayName', 'Points in image 1');
+plot(points_2(1,matches_2(2,not(dynamic))), points_2(2,matches_2(2,not(dynamic))), 'b*','DisplayName', 'Static points in image 2');
+plot(points_2(1,matches_2(2,dynamic)), points_2(2,matches_2(2,dynamic)), 'r*','DisplayName', 'Dynamic points in image 2');
 % Plot legend
-legend();
+legend('show');
+
+%% Plot the trajectories
+
+for dyn = matches_2(1,dynamic)
+
+    idx_doll_I1 = dyn;
+    idx_doll_I2 = matches_2(2,matches_2(1,:)==idx_doll_I1); % ToDo: identify the corresponding point of idx_doll_I1 in image 2
+    idx_doll_I3 = matches_3(2,matches_3(1,:)==idx_doll_I1); % ToDo: identify the corresponding point of idx_doll_I1 in image 3
+    idx_doll_I4 = matches_4(2,matches_4(1,:)==idx_doll_I1); % ToDo: identify the corresponding point of idx_doll_I1 in image 4
+
+    %Check if the dynamic point is in all the images
+    if (~isempty(idx_doll_I2) && ~isempty(idx_doll_I3) && ~isempty(idx_doll_I4))
+        % coordinates (in image 1) of the keypoint idx_car_I1 (point in a van). 
+        % point1_1 is the projection of a 3D point in the 3D trajectory of the van
+        point1_1 = [points_1(1:2,idx_doll_I1)' 1]';
+        % coordinates (in image 1) of another 3D point in the same 3D trajectory of the doll
+        point1_2 = [points_2(1:2,idx_doll_I2)' 1]';
+
+        % l1 is the projection of the 3D trajectory of keypoint idx_doll_I1
+        % (it is the line that joins point1_1 and point1_2)
+        l1 = cross(point1_1, point1_2);% ToDo: compute the line
+
+        % Compute the projection of point idx_doll_I1 in the reference image 
+        pi1 = point1_1;
+        alpha1 = (pi1(1) - point1_1(1))./ (point1_1(1) - point1_2(1));
+
+        % Write the homogeneous coordinates of the corresponding point of idx_doll_I2 in image 2
+        point2 = [points_2(1:2,idx_doll_I2)' 1]';
+        % Compute the epipolar line of point2 in the reference image
+        l2 = F_2' * point2;
+        % Compute the projection of point idx_doll_I2 in the reference image 
+        pi2 = cross(l1, l2);
+        alpha2 = (pi2(1) - point1_1(1))./ (point1_1(1) - point1_2(1));
+
+        % Write the homogeneous coordinates of the corresponding point of idx_doll_I3 in image 3
+        point3 = [points_3(1:2,idx_doll_I3)' 1]';
+        % Compute the epipolar line of point3 in the reference image
+        l3 = F_3' * point3;
+        % Compute the projection of point idx_doll_I3 in the reference image 
+        pi3 = cross(l1, l3);
+        alpha3 = (pi3(1) - point1_1(1))./ (point1_1(1) - point1_2(1));
+
+        % Write the homogeneous coordinates of the corresponding point of idx_doll_I4 in image 4
+        point4 = [points_4(1:2,idx_doll_I4)' 1]';
+        % Compute the epipolar line of point4 in the reference image
+        l4 = F_4' * point4;
+        % Compute the projection of point idx_doll_I4 in the reference image 
+        pi4 = cross(l1, l4);
+        alpha4 = (pi4(1) - point1_1(1))./ (point1_1(1) - point1_2(1));
+
+        [sigma, order] = sort([alpha1 alpha2, alpha3, alpha4]);
+        order
+    end
+
+end
