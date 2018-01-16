@@ -381,6 +381,11 @@ plot(points_2(1,matches_2(2,dynamic)), points_2(2,matches_2(2,dynamic)), 'r*','D
 legend('show');
 
 %% Compute images order
+figure(18);
+imshow(im1);
+hold on;
+t=1:0.1:1000;
+    
 for dyn = matches_2(1,dynamic)
 
     idx_doll_I1 = dyn;
@@ -427,9 +432,16 @@ for dyn = matches_2(1,dynamic)
         % Compute the projection of point idx_doll_I4 in the reference image 
         pi4 = cross(l1, l4);
         alpha4 = (pi4(1) - point1_1(1))./ (point1_1(1) - point1_2(1));
+        
+        %Plot trajectory and points
+        plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
+        plot(pi1(1)/pi1(3), pi1(2)/pi1(3), 'y*');
+        plot(pi2(1)/pi2(3), pi2(2)/pi2(3), 'yo');
+        plot(pi3(1)/pi3(3), pi3(2)/pi3(3), 'ys');
+        plot(pi4(1)/pi4(3), pi4(2)/pi4(3), 'yd');
 
         [sigma, order] = sort([alpha1 alpha2, alpha3, alpha4]);
         order
     end
-
+    legend('trajectory','point in image 1','point in image 2','point in image 3','point in image 4');
 end
