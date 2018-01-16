@@ -380,8 +380,7 @@ plot(points_2(1,matches_2(2,dynamic)), points_2(2,matches_2(2,dynamic)), 'r*','D
 % Plot legend
 legend('show');
 
-%% Plot the trajectories
-
+%% Compute images order
 for dyn = matches_2(1,dynamic)
 
     idx_doll_I1 = dyn;
