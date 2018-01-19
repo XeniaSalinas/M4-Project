@@ -94,41 +94,59 @@ K = H * K;
 
 % ToDo: Compute the Essential matrix from the Fundamental matrix
 E = transpose(K) * F * K;
+P1 = K*eye(3,4);
+%Compute the extrinsic parameters of P2 from the Essential matrix
+[U,D,V]=svd(E);
 
+W=[0,-1,0; 1,0,0;0,0,1];
+Z=[0,1,0;-1,0,0;0,0,0];
 
-% ToDo: write the camera projection matrix for the first camera
-P1 = [eye(3) ones(3,1)];
+R1=U*W*V';
+R2=U*W'*V';
 
-% ToDo: write the four possible matrices for the second camera
-[U,D,V] = svd(E);
-W = [0 -1 0; 1 0 0; 0 0 1];
-Z = [0 1 0; -1 0 0; 0 0 0];
-
-Pc2 = {};
-Pc2{1} = [U*W*transpose(V) U(:,3)];
-Pc2{2} = [U*W*transpose(V) -U(:,3)];
-Pc2{3} = [U*transpose(W)*transpose(V) U(:,3)];
-Pc2{4} = [U*transpose(W)*transpose(V) -U(:,3)];
-
+t=U(:,end);
 % HINT: You may get improper rotations; in that case you need to change
 %       their sign.
 % Let R be a rotation matrix, you may check:
 % if det(R) < 0
 %     R = -R;
 % end
+ if det(R1) < 0
+     R1 = -R1;
+ end
+ if det(R2) < 0
+     R2 = -R2;
+ end
+
+Pc2 = {};
+Pc2{1} = K* [R1, t];
+Pc2{2} = K* [R1, -t];
+Pc2{3} = K* [R2 , t];
+Pc2{4} = K* [R2 , -t];
 
 % plot the first camera and the four possible solutions for the second
 figure;
-plot_camera(P1,w,h);
-plot_camera(Pc2{1},w,h);
-plot_camera(Pc2{2},w,h);
-plot_camera(Pc2{3},w,h);
-plot_camera(Pc2{4},w,h);
+plot_camera(P1,w,h, 'b');
+plot_camera(Pc2{1},w,h,'y');
+plot_camera(Pc2{2},w,h,'r');
+plot_camera(Pc2{3},w,h,'g');
+plot_camera(Pc2{4},w,h,'k');
 
 
 %% Reconstruct structure
 % ToDo: Choose a second camera candidate by triangulating a match.
-P2 = ...
+for i=1:4
+    x_p1=triangulate(x1(:,5), x2(:,5), P1, Pc2{i}, [w h]);
+    %Check if the point is in front of P1
+    if x_p1(3)>0 
+        x_p2=Pc2{i}*x_p1;
+        %Check if the point is in front of P2
+        if x_p2(3)>0
+            P2=Pc2{i};
+            i
+        end
+    end
+end
 
 % Triangulate all matches.
 N = size(x1,2);
@@ -145,11 +163,11 @@ g = interp2(double(Irgb{1}(:,:,2)), x1(1,:), x1(2,:));
 b = interp2(double(Irgb{1}(:,:,3)), x1(1,:), x1(2,:));
 Xe = euclid(X);
 figure; hold on;
-plot_camera(P1,w,h);
-plot_camera(P2,w,h);
+plot_camera(P1,w,h,'b');
+plot_camera(P2,w,h, 'r');
 for i = 1:length(Xe)
     scatter3(Xe(1,i), Xe(3,i), -Xe(2,i), 5^2, [r(i) g(i) b(i)]/255, 'filled');
-end;
+end
 axis equal;
 
 
@@ -158,6 +176,28 @@ axis equal;
 % ToDo: compute the reprojection errors
 %       plot the histogram of reprojection errors, and
 %       plot the mean reprojection error
+x1h=homog(x1);
+x2h= homog(x2);
+
+x1p=P1*X;
+x2p=P2*X;
+
+%Normalize projected points
+x2p=x2p./x2p(3,:);
+x1p=x1p./x1p(3,:);
+
+re=sum((x1h-x1p).^2) + sum((x2h-x2p).^2); % Reprojection error
+
+%Histogram of reprojection errors
+figure(); hist(re,20);
+
+%Mean reprojection error
+re_mean=mean(re);
+hold on
+plot([re_mean,re_mean],ylim,'r')
+hold off
+
+disp(['Mean reprojection error: ' num2str(re_mean)]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3. Depth map computation with local methods (SSD)
