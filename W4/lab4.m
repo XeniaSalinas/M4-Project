@@ -139,26 +139,47 @@ Pc2{4} = K * [R2 , -t];
 
 % plot the first camera and the four possible solutions for the second
 figure;
-plot_camera(P1,w,h, 'b');
+plot_camera(P1,w,h, 'k');
 plot_camera(Pc2{1},w,h,'y');
 plot_camera(Pc2{2},w,h,'r');
 plot_camera(Pc2{3},w,h,'g');
-plot_camera(Pc2{4},w,h,'k');
+plot_camera(Pc2{4},w,h,'b');
+
+% create legend
+hold on;
+handler = zeros(5, 1);
+handler(1) = plot(NaN,NaN,'-k');
+handler(2) = plot(NaN,NaN,'-y');
+handler(3) = plot(NaN,NaN,'-r');
+handler(4) = plot(NaN,NaN,'-g');
+handler(5) = plot(NaN,NaN,'-b');
+legend(handler, 'Camera 1', 'Camera 2 (R1 | t)', 'Camera 2 (R1 | -t)', 'Camera 2 (R2 | t)', 'Camera 2 (R2 | -t)');
+hold off;
 
 %% Reconstruct structure
 % ToDo: Choose a second camera candidate by triangulating a match.
+
+% Choose random match, use seed for reproducibility
+seed = 123456;
+rng(seed);
+match_idx = randi(length(x1));
+
+selected_camera = 0;
+P2 = 0;
 for i=1:4
-    x_p1=triangulate(x1(:,5), x2(:,5), P1, Pc2{i}, [w h]);
-    %Check if the point is in front of P1
-    if x_p1(3)>0 
-        x_p2=Pc2{i}*x_p1;
-        %Check if the point is in front of P2
-        if x_p2(3)>0
-            P2=Pc2{i};
-            i
-        end
+    X=triangulate(x1(:,match_idx), x2(:,match_idx), P1, Pc2{i}, [w h]);
+    
+    % Projection into image planes
+    x_p1 = P1 * X;
+    x_p2 = Pc2{i} * X;
+    
+    if x_p1(3) > 0 && x_p2(3) > 0
+        P2 = Pc2{i};
+        selected_camera = i;
+        break;
     end
 end
+fprintf('Selected camera: %d\n', selected_camera);
 
 % Triangulate all matches.
 N = size(x1,2);
@@ -175,12 +196,34 @@ g = interp2(double(Irgb{1}(:,:,2)), x1(1,:), x1(2,:));
 b = interp2(double(Irgb{1}(:,:,3)), x1(1,:), x1(2,:));
 Xe = euclid(X);
 figure; hold on;
+% Plot real cameras
 plot_camera(P1,w,h,'b');
 plot_camera(P2,w,h, 'r');
+% Plot alternative cameras as well, to see how they would be positioned
+colors = ['k', 'y', 'g'];
+color_idx = 1;
+for i = 1:4
+    if i == selected_camera
+        continue
+    end
+    plot_camera(Pc2{i},w,h, colors(color_idx));
+    color_idx = color_idx + 1;
+end
+% Plot 3D points
 for i = 1:length(Xe)
     scatter3(Xe(1,i), Xe(3,i), -Xe(2,i), 5^2, [r(i) g(i) b(i)]/255, 'filled');
 end
 axis equal;
+% Create legend
+hold on;
+handler = zeros(5, 1);
+handler(1) = plot(NaN,NaN,'-b');
+handler(2) = plot(NaN,NaN,'-r');
+handler(3) = plot(NaN,NaN,'-k');
+handler(4) = plot(NaN,NaN,'-y');
+handler(5) = plot(NaN,NaN,'-g');
+legend(handler, 'Camera 1', 'Camera 2', 'Alt. Camera 2', 'Alt. Camera 2', 'Alt. Camera 2');
+hold off;
 
 
 %% Compute reprojection error.
@@ -189,7 +232,7 @@ axis equal;
 %       plot the histogram of reprojection errors, and
 %       plot the mean reprojection error
 x1h=homog(x1);
-x2h= homog(x2);
+x2h=homog(x2);
 
 x1p=P1*X;
 x2p=P2*X;
@@ -201,7 +244,7 @@ x1p=x1p./x1p(3,:);
 re=sum((x1h-x1p).^2) + sum((x2h-x2p).^2); % Reprojection error
 
 %Histogram of reprojection errors
-figure(); hist(re,20);
+figure(); hist(re, 50);
 
 %Mean reprojection error
 re_mean=mean(re);
