@@ -36,7 +36,8 @@ for i = 1:N_test
 end
 
 % error
-euclid(X_test) - euclid(X_trian)
+triangulation_error = euclid(X_test) - euclid(X_trian);
+display(triangulation_error);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -78,9 +79,7 @@ plotmatches(I{1}, I{2}, points{1}, points{2}, inlier_matches, 'Stacking', 'v');
 x1 = points{1}(:, inlier_matches(1, :));
 x2 = points{2}(:, inlier_matches(2, :));
 
-%vgg_gui_F(Irgb{1}, Irgb{2}, F');
-
-
+vgg_gui_F(Irgb{1}, Irgb{2}, F');
 
 
 %% Compute candidate camera matrices.
@@ -91,7 +90,6 @@ scale = 0.3;
 H = [scale 0 0; 0 scale 0; 0 0 1];
 K = H * K;
 
-
 % ToDo: Compute the Essential matrix from the Fundamental matrix
 E = transpose(K) * F * K;
 P1 = K*eye(3,4);
@@ -101,10 +99,25 @@ P1 = K*eye(3,4);
 W=[0,-1,0; 1,0,0;0,0,1];
 Z=[0,1,0;-1,0,0;0,0,0];
 
+% Direct way to compute the (unsigned) translation vector --> last vector
+% of U
+t=U(:,end);
+
+% Indirect way using the SVD decomposition of the skew-symmetric matrix
+% [Tx] --> SVD([Tx]) --> last column of V
+Tx_skew_symmetric = U * (- Z) * transpose(U);
+[~, ~, V_Tx] = svd(Tx_skew_symmetric);
+t_prima = V(:, end);
+
+% The translation vectors must be equal (possibly with changed signs)
+display(t);
+display(t_prima);
+
+% Compute rotation
 R1=U*W*V';
 R2=U*W'*V';
 
-t=U(:,end);
+
 % HINT: You may get improper rotations; in that case you need to change
 %       their sign.
 % Let R be a rotation matrix, you may check:
@@ -119,10 +132,10 @@ t=U(:,end);
  end
 
 Pc2 = {};
-Pc2{1} = K* [R1, t];
-Pc2{2} = K* [R1, -t];
-Pc2{3} = K* [R2 , t];
-Pc2{4} = K* [R2 , -t];
+Pc2{1} = K * [R1, t];
+Pc2{2} = K * [R1, -t];
+Pc2{3} = K * [R2 , t];
+Pc2{4} = K * [R2 , -t];
 
 % plot the first camera and the four possible solutions for the second
 figure;
@@ -131,7 +144,6 @@ plot_camera(Pc2{1},w,h,'y');
 plot_camera(Pc2{2},w,h,'r');
 plot_camera(Pc2{3},w,h,'g');
 plot_camera(Pc2{4},w,h,'k');
-
 
 %% Reconstruct structure
 % ToDo: Choose a second camera candidate by triangulating a match.
