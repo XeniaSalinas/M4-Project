@@ -297,14 +297,14 @@ matching_cost = 'SSD';
 
 % Compute disparity map
 disp_map = stereo_computation( ...
-    stereo_img{1}, stereo_img{2}, ...
+    stereo_img_l, stereo_img_r, ...
     min_disparity, max_disparity, ...
     window_size, matching_cost ...
 );
 
 % Compare disparity maps
 figure;
-imshow(disp_map);
+imshow(disp_map / max(max(disp_map)));
 title('Computed disparity map');
 
 figure;
