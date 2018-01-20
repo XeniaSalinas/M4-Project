@@ -281,6 +281,35 @@ disp(['Mean reprojection error: ' num2str(re_mean)]);
 % Note 2: For this first set of images use 0 as minimum disparity 
 % and 16 as the the maximum one.
 
+% Load images and gt disparity map
+stereo_img_l = imread('Data/scene1.row3.col3.ppm');
+stereo_img_r = imread('Data/scene1.row3.col4.ppm');
+stereo_img_l = sum(double(stereo_img_l), 3) / 3 / 255;
+stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
+
+gt_disp_map = imread('Data/truedisp.row3.col3.pgm');
+
+% Parameters
+min_disparity = 0;
+max_disparity = 16;
+window_size = 3;
+matching_cost = 'SSD';
+
+% Compute disparity map
+disp_map = stereo_computation( ...
+    stereo_img{1}, stereo_img{2}, ...
+    min_disparity, max_disparity, ...
+    window_size, matching_cost ...
+);
+
+% Compare disparity maps
+figure;
+imshow(disp_map);
+title('Computed disparity map');
+
+figure;
+imshow(gt_disp_map);
+title('Ground-truth disparity map');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. Depth map computation with local methods (NCC)
