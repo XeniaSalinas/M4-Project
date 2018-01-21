@@ -12,7 +12,7 @@ if window_size <= 0
     error('Window size should be bigger than 0');
 end
 
-if strcmp(matching_cost, 'SSD') && strcmp(matching_cost, 'NCC')
+if strcmp(matching_cost, 'SSD') && strcmp(matching_cost, 'NCC') && strcmp(matching_cost, 'BILATERAL')
     error('Matching cost not recognized / implemented. Use one of: {''SSD, NCC''}');
 end
 
@@ -95,13 +95,13 @@ for i=left_pad+1:h+left_pad
         
             % Compute cost between left (reference) window and right
             % (sliding) window
-            if matching_cost == 'SSD'
+            if strcmp(matching_cost, 'SSD')
                 % Assume uniform distribution of weights w(p,q)
                 left_vals = left_window_vals(:);
                 right_vals = right_window_vals(:);
                 ssd = sum((left_vals - right_vals).^2) / (window_size * window_size);
                 cost_vector(idx) = ssd;
-            elseif matching_cost == 'NCC'
+            elseif strcmp(matching_cost, 'NCC')
                 % Assume uniform distribution of weights w(p,q)
                 left_vals = left_window_vals(:);
                 right_vals = right_window_vals(:);
@@ -112,13 +112,34 @@ for i=left_pad+1:h+left_pad
                 ncc_num = sum((left_vals - m_left).*(right_vals - m_right)) / (window_size * window_size);
                 ncc = ncc_num / (std_left * std_right);
                 cost_vector(idx) = ncc;
+            elseif strcmp(matching_cost, 'BILATERAL')
+                gammac = 5;
+                gammap =17.5;
+                T = 45;            
+                left_vals = left_window_vals(:);
+                right_vals = right_window_vals(:);
+                center = ceil(window_size*window_size/2);
+                left_center = left_vals(center);
+                right_center = right_vals(center);             
+                num = 0;
+                den = 0;
+                for k = 1:window_size*window_size
+                    dist = sqrt((k-center)^2);
+                    wleft = exp( - (abs(left_vals(k)-left_center)/gammac) - (dist/gammap));
+                    wright = exp( - (abs(right_vals(k)-right_center)/gammac) - (dist/gammap));
+                    c = min(abs(left_vals(k) - right_vals(k)),T);
+                    num = num + wleft*wright*c;
+                    den = den + wleft*wright;
+                end
+                bilateral_cost = num/den;
+                cost_vector(idx) = bilateral_cost;
             end
         end
         
         % Pick disparity that minimizes cost / maximizes quality
-        if matching_cost == 'SSD'
+        if strcmp(matching_cost, 'SSD') || strcmp(matching_cost, 'BILATERAL')
             [~, disp_pos] = min(cost_vector);
-        elseif matching_cost == 'NCC'
+        elseif strcmp(matching_cost, 'NCC')
             [~, disp_pos] = max(cost_vector);
         end
         signed_disparity = interval(disp_pos) - j;

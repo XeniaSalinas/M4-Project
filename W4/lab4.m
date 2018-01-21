@@ -370,8 +370,8 @@ stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
 % Parameters
 min_disparity = 0;
 max_disparity = 16;
-window_size = 9;
-matching_cost = 'NCC';
+window_size = 3;
+matching_cost = 'SSD';
 
 % Compute disparity map
 disp_map = stereo_computation( ...
@@ -395,6 +395,30 @@ title('Computed disparity map');
 % Comment the results and compare them to the previous results (no weights).
 %
 % Note: Use grayscale images (the paper uses color images)
+
+% Load images and gt disparity map
+stereo_img_l = imread('Data/scene1.row3.col4.ppm');
+stereo_img_r = imread('Data/scene1.row3.col3.ppm');
+stereo_img_l = sum(double(stereo_img_l), 3) / 3 / 255;
+stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
+
+% Parameters
+min_disparity = 0;
+max_disparity = 16;
+window_size = 20;
+matching_cost = 'BILATERAL';
+
+% Compute disparity map
+disp_map = stereo_computation( ...
+    stereo_img_l, stereo_img_r, ...
+    min_disparity, max_disparity, ...
+    window_size, matching_cost ...
+);
+
+% Compare disparity maps
+figure;
+imshow(disp_map / max(max(disp_map)));
+title('Computed disparity map');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Stereo computation with Belief Propagation
