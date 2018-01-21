@@ -320,6 +320,36 @@ title('Ground-truth disparity map');
 % Evaluate the results changing the window size (e.g. 3x3, 9x9, 20x20,
 % 30x30) and the matching cost. Comment the results.
 
+% Load images and gt disparity map
+stereo_img_l = imread('Data/scene1.row3.col3.ppm');
+stereo_img_r = imread('Data/scene1.row3.col4.ppm');
+stereo_img_l = sum(double(stereo_img_l), 3) / 3 / 255;
+stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
+
+gt_disp_map = imread('Data/truedisp.row3.col3.pgm');
+
+% Parameters
+min_disparity = 0;
+max_disparity = 16;
+window_size = 30;
+matching_cost = 'NCC';
+
+% Compute disparity map
+disp_map = stereo_computation( ...
+    stereo_img_l, stereo_img_r, ...
+    min_disparity, max_disparity, ...
+    window_size, matching_cost ...
+);
+
+% Compare disparity maps
+figure;
+imshow(disp_map / max(max(disp_map)));
+title('Computed disparity map');
+
+figure;
+imshow(gt_disp_map);
+title('Ground-truth disparity map');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. Depth map computation with local methods
 
@@ -330,6 +360,30 @@ title('Ground-truth disparity map');
 % results.
 % Notice that in this new data the minimum and maximum disparities may
 % change.
+
+% Load images and gt disparity map
+stereo_img_l = imread('Data/0001_rectified_s.png');
+stereo_img_r = imread('Data/0002_rectified_s.png');
+stereo_img_l = sum(double(stereo_img_l), 3) / 3 / 255;
+stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
+
+% Parameters
+min_disparity = 0;
+max_disparity = 16;
+window_size = 9;
+matching_cost = 'NCC';
+
+% Compute disparity map
+disp_map = stereo_computation( ...
+    stereo_img_l, stereo_img_r, ...
+    min_disparity, max_disparity, ...
+    window_size, matching_cost ...
+);
+
+% Compare disparity maps
+figure;
+imshow(disp_map / max(max(disp_map)));
+title('Computed disparity map');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. Bilateral weights

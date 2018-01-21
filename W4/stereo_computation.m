@@ -12,8 +12,8 @@ if window_size <= 0
     error('Window size should be bigger than 0');
 end
 
-if matching_cost ~= "SSD" && matching_cost ~= "NCC"
-    error("Matching cost not recognized / implemented. Use one of: {'SSD', 'NCC'}");
+if strcmp(matching_cost, 'SSD') && strcmp(matching_cost, 'NCC')
+    error('Matching cost not recognized / implemented. Use one of: {''SSD, NCC''}');
 end
 
 % Convert images to greyscale
@@ -101,7 +101,7 @@ for i=left_pad+1:h+left_pad
                 right_vals = right_window_vals(:);
                 ssd = sum((left_vals - right_vals).^2) / (window_size * window_size);
                 cost_vector(idx) = ssd;
-            else
+            elseif matching_cost == 'NCC'
                 % Assume uniform distribution of weights w(p,q)
                 left_vals = left_window_vals(:);
                 right_vals = right_window_vals(:);
@@ -118,7 +118,7 @@ for i=left_pad+1:h+left_pad
         % Pick disparity that minimizes cost / maximizes quality
         if matching_cost == 'SSD'
             [~, disp_pos] = min(cost_vector);
-        else
+        elseif matching_cost == 'NCC'
             [~, disp_pos] = max(cost_vector);
         end
         signed_disparity = interval(disp_pos) - j;
