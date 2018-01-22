@@ -32,11 +32,11 @@ else
     % Even window size
     left_pad = window_size / 2 - 1; right_pad = window_size / 2;
 end
-tmp_pad = padarray(L_image, [left_pad, left_pad], 'symmetric', 'pre');
-L_image_pad = padarray(tmp_pad, [right_pad, right_pad], 'symmetric', 'post');
+tmp_pad = padarray(L_image, [left_pad, left_pad], 0, 'pre');
+L_image_pad = padarray(tmp_pad, [right_pad, right_pad], 0, 'post');
 
-tmp_pad = padarray(R_image, [left_pad, left_pad], 'symmetric', 'pre');
-R_image_pad = padarray(tmp_pad, [right_pad, right_pad], 'symmetric', 'post');
+tmp_pad = padarray(R_image, [left_pad, left_pad], 0, 'pre');
+R_image_pad = padarray(tmp_pad, [right_pad, right_pad], 0, 'post');
 clear tmp_pad;
     
 
@@ -58,13 +58,13 @@ for i=left_pad+1:h+left_pad
         min_right_disparity_pos = j+min_disparity;
         max_right_disparity_pos = min(j+max_disparity, w+left_pad);
         % Disparities interval
-        if max_left_disparity_pos < j
+        if max_left_disparity_pos < min_left_disparity_pos
             % Impossible configuration in left border, just use right
-            % interval. Only happens when min_disparity is 0.
+            % interval. Only happens when min_disparity is different than 0.
             interval = min_right_disparity_pos:max_right_disparity_pos;
-        elseif min_right_disparity_pos > j
+        elseif min_right_disparity_pos > max_right_disparity_pos
             % Impossible configuration in right border, just use left
-            % interval. Only happens when min_disparity is 0.
+            % interval. Only happens when min_disparity is different than 0.
             interval = min_left_disparity_pos:max_left_disparity_pos;
         elseif max_left_disparity_pos == min_right_disparity_pos
             % Central pixel positions (not close to borders) when 
@@ -114,7 +114,7 @@ for i=left_pad+1:h+left_pad
                 cost_vector(idx) = ncc;
             elseif strcmp(matching_cost, 'BILATERAL')
                 gammac = 5;
-                gammap =17.5;
+                gammap = 17.5;
                 T = 45;            
                 left_vals = left_window_vals(:);
                 right_vals = right_window_vals(:);
