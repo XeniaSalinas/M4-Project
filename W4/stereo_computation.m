@@ -114,28 +114,23 @@ for i=left_pad+1:h+left_pad
                 cost_vector(idx) = ncc;
             elseif strcmp(matching_cost, 'BILATERAL')
                 gammac = 5;
-                gammap = 17.5;
-                T = 40;            
-                left_vals = left_window_vals(:);
-                right_vals = right_window_vals(:);
-                center = ceil(window_size*window_size/2);
-                left_center = left_vals(center);
-                right_center = right_vals(center);             
-                num = 0;
-                den = 0;
-                for k = 1:window_size*window_size
-                    dist = sqrt((k-center)^2);
-                    wleft = exp( - (abs(left_vals(k)-left_center)/gammac) - (dist/gammap));
-                    wright = exp( - (abs(right_vals(k)-right_center)/gammac) - (dist/gammap));
-                    c = min(abs(left_vals(k) - right_vals(k)),T);
-                    num = num + wleft*wright*c;
-                    den = den + wleft*wright;
+                gammap =17.5;
+				T = 40;    
+                if (mod(window_size,2) ==0)
+                    [dist,~] = meshgrid([floor(window_size/2)-1:-1:0,0:floor(window_size/2)-1],[floor(window_size/2)-1:-1:0,0:floor(window_size/2)-1]);           
+                else
+                    [dist,~] = meshgrid([floor(window_size/2):-1:0,1:floor(window_size/2)],[floor(window_size/2):-1:0,1:floor(window_size/2)]);
                 end
-                bilateral_cost = num/den;
-                cost_vector(idx) = bilateral_cost;
+                %center = ceil(window_size*window_size/2);
+                left_center = left_window_vals(floor(window_size/2)+1, floor(window_size/2)+1);
+                right_center = right_window_vals(floor(window_size/2)+1, floor(window_size/2)+1);             
+%                 dist = sqrt((k-center)^2);
+                bw_left = exp( - (abs(left_window_vals-left_center)/gammac) - (dist/gammap));
+                bw_right = exp( - (abs(right_window_vals-right_center)/gammac) - (dist/gammap));
+                bw = bw_left*bw_right;
+                cost_vector(idx) = sum(sum(bw.*min(abs(left_window_vals-right_window_vals),max_disparity)))/(sum(sum(bw)));
             end
-        end
-        
+        end        
         % Pick disparity that minimizes cost / maximizes quality
         if strcmp(matching_cost, 'SSD') || strcmp(matching_cost, 'BILATERAL')
             [~, disp_pos] = min(cost_vector);
