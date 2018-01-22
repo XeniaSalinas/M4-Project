@@ -35,8 +35,8 @@ gt_disp_map = imread('Data/truedisp.row3.col3.pgm');
 % Parameters
 min_disparity = 0;
 max_disparity = 16;
-window_size = 3;
-matching_cost = 'SSD';
+window_size = 5;
+matching_cost = 'BILATERAL';
 
 % Compute disparity map
 disp_map = stereo_computation( ...
