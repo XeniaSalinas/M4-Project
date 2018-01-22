@@ -44,6 +44,18 @@ clear tmp_pad;
 [h, w] = size(L_image);
 disp_map = zeros(h, w);
 
+if strcmp(matching_cost, 'BILATERAL')
+    
+    center = [floor(window_size/2), floor(window_size/2)];
+    for a = 1:window_size
+        for b=1:window_size
+            d{a,b} = [a,b];
+            d{a,b} = norm(d{a,b}-center);
+        end
+    end
+    dist = cell2mat(d);
+end
+
 % Go over all pixels (i,j)
 for i=left_pad+1:h+left_pad
     for j=left_pad+1:w+left_pad
@@ -114,12 +126,7 @@ for i=left_pad+1:h+left_pad
                 cost_vector(idx) = ncc;
             elseif strcmp(matching_cost, 'BILATERAL')
                 gammac = 5;
-                gammap =17.5;
-                if (mod(window_size,2) ==0)
-                    [dist,~] = meshgrid([floor(window_size/2)-1:-1:0,1:floor(window_size/2)],[floor(window_size/2)-1:-1:0,1:floor(window_size/2)]);           
-                else
-                    [dist,~] = meshgrid([floor(window_size/2):-1:0,1:floor(window_size/2)],[floor(window_size/2):-1:0,1:floor(window_size/2)]);
-                end
+                gammap =window_size/2;
                 %center = ceil(window_size*window_size/2);
                 left_center = left_window_vals(floor(window_size/2)+1, floor(window_size/2)+1);
                 right_center = right_window_vals(floor(window_size/2)+1, floor(window_size/2)+1);             
