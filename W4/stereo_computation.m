@@ -115,7 +115,7 @@ for i=left_pad+1:h+left_pad
             elseif strcmp(matching_cost, 'BILATERAL')
                 gammac = 5;
                 gammap = 17.5;
-                T = 45;            
+                T = 40;            
                 left_vals = left_window_vals(:);
                 right_vals = right_window_vals(:);
                 center = ceil(window_size*window_size/2);

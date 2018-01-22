@@ -405,7 +405,7 @@ stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
 % Parameters
 min_disparity = 0;
 max_disparity = 16;
-window_size = 20;
+window_size = 35;
 matching_cost = 'BILATERAL';
 
 % Compute disparity map
