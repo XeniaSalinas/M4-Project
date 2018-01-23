@@ -399,8 +399,8 @@ title('Computed disparity map');
 % Load images and gt disparity map
 stereo_img_l = imread('Data/scene1.row3.col4.ppm');
 stereo_img_r = imread('Data/scene1.row3.col3.ppm');
-stereo_img_l = sum(double(stereo_img_l), 3) / 3 / 255;
-stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
+% stereo_img_l = sum(double(stereo_img_l), 3) / 3 / 255;
+% stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
 
 % Parameters
 min_disparity = 0;
@@ -414,10 +414,11 @@ disp_map = stereo_computation( ...
     min_disparity, max_disparity, ...
     window_size, matching_cost ...
 );
-
+disp_map = lab2rgb(disp_map);
+disp_map = sum(double(disp_map), 3) / 3 / 255;
 % Compare disparity maps
 figure;
-imshow(disp_map / max(max(disp_map)));
+imshow(disp_map/ max(max(disp_map)));
 title('Computed disparity map');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
