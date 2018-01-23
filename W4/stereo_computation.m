@@ -14,7 +14,7 @@ end
 if strcmp(matching_cost, 'SSD') && strcmp(matching_cost, 'NCC') && strcmp(matching_cost, 'BILATERAL')
     error('Matching cost not recognized / implemented. Use one of: {''SSD, NCC''}');
 end
-if strcmp(matching_cost, 'BILATERAL')
+if strcmp(matching_cost, 'BILATERAL_COLOR')
     L_image = rgb2lab(L_image);
     R_image = rgb2lab(R_image);
 else
@@ -47,7 +47,7 @@ clear tmp_pad;
 [h, w, c] = size(L_image);
 disp_map = zeros(h, w, c);
 
-if strcmp(matching_cost, 'BILATERAL')
+if strcmp(matching_cost, 'BILATERAL') || strcmp(matching_cost, 'BILATERAL_COLOR')
     positions = 1:window_size;
     center = ceil(length(positions)/2);
     centered_positions = positions - center;
@@ -56,10 +56,10 @@ if strcmp(matching_cost, 'BILATERAL')
     centered_positions_norm = centered_positions / (window_size * 2);
     column_distances = repmat(centered_positions_norm, window_size, 1);
     row_distances = transpose(column_distances);
-    dist = zeros(window_size, window_size, 3);
-    dist(:,:,1) = sqrt(column_distances.^2 + row_distances.^2);
-    dist(:,:,2) = sqrt(column_distances.^2 + row_distances.^2);
-    dist(:,:,3) = sqrt(column_distances.^2 + row_distances.^2);
+    dist = zeros(window_size, window_size, c);
+    for i = 1:c
+        dist(:,:,c) = sqrt(column_distances.^2 + row_distances.^2);
+    end
 end
 
 % Go over all pixels (i,j)
@@ -127,7 +127,7 @@ for i=left_pad+1:h+left_pad
                 ncc_num = sum((left_vals - m_left).*(right_vals - m_right)) / (window_size * window_size);
                 ncc = ncc_num / (std_left * std_right);
                 cost_vector(idx) = ncc;
-            elseif strcmp(matching_cost, 'BILATERAL')
+            elseif strcmp(matching_cost, 'BILATERAL') || strcmp(matching_cost, 'BILATERAL_COLOR')
                 gammac = 5;
                 gammap = window_size/2;
                 left_center = left_window_vals(floor(window_size/2)+1, floor(window_size/2)+1,:);
@@ -135,20 +135,24 @@ for i=left_pad+1:h+left_pad
                 bw_left = exp( - (abs(left_window_vals-left_center)/gammac) - (dist/gammap));
                 bw_right = exp( - (abs(right_window_vals-right_center)/gammac) - (dist/gammap));
                 bw = bw_left.*bw_right;
-                cost_vector(idx, 1) = (sum(sum(bw(:,:,1).*min(abs(left_window_vals(:,:,1)-right_window_vals(:,:,1)),max_disparity))))/(sum(sum(bw(:,:,1))));
-                cost_vector(idx, 2) = (sum(sum(bw(:,:,2).*min(abs(left_window_vals(:,:,2)-right_window_vals(:,:,2)),max_disparity))))/(sum(sum(bw(:,:,2))));
-                cost_vector(idx, 3) = (sum(sum(bw(:,:,3).*min(abs(left_window_vals(:,:,3)-right_window_vals(:,:,3)),max_disparity))))/(sum(sum(bw(:,:,3))));
+                if strcmp(matching_cost, 'BILATERAL_COLOR')
+                    cost_vector(idx, 1) = (sum(sum(bw(:,:,1).*min(abs(left_window_vals(:,:,1)-right_window_vals(:,:,1)),max_disparity))))/(sum(sum(bw(:,:,1))));
+                    cost_vector(idx, 2) = (sum(sum(bw(:,:,2).*min(abs(left_window_vals(:,:,2)-right_window_vals(:,:,2)),max_disparity))))/(sum(sum(bw(:,:,2))));
+                    cost_vector(idx, 3) = (sum(sum(bw(:,:,3).*min(abs(left_window_vals(:,:,3)-right_window_vals(:,:,3)),max_disparity))))/(sum(sum(bw(:,:,3))));
+                else
+                    cost_vector(idx) = (sum(sum(bw.*min(abs(left_window_vals-right_window_vals),max_disparity))))/(sum(sum(bw)));
+                end
             end
         end        
         % Pick disparity that minimizes cost / maximizes quality
-        if strcmp(matching_cost, 'SSD') 
+        if strcmp(matching_cost, 'SSD') || strcmp(matching_cost, 'BILATERAL')
             [~, disp_pos] = min(cost_vector);
             signed_disparity = interval(disp_pos) - j;
             disparity = abs(signed_disparity);
 
             % Assign disparity to disparity map
             disp_map(i-left_pad, j-left_pad) = disparity;
-        elseif strcmp(matching_cost, 'BILATERAL')
+        elseif strcmp(matching_cost, 'BILATERAL_COLOR') 
             [~, disp_pos1] = min(cost_vector(:,1));
             [~, disp_pos2] = min(cost_vector(:,2));
             [~, disp_pos3] = min(cost_vector(:,3));

@@ -405,8 +405,34 @@ stereo_img_r = imread('Data/scene1.row3.col3.ppm');
 % Parameters
 min_disparity = 0;
 max_disparity = 16;
-window_size = 35;
+window_size = 3;
 matching_cost = 'BILATERAL';
+
+% Compute disparity map
+disp_map = stereo_computation( ...
+    stereo_img_l, stereo_img_r, ...
+    min_disparity, max_disparity, ...
+    window_size, matching_cost ...
+);
+% disp_map = lab2rgb(disp_map);
+% disp_map = sum(double(disp_map), 3) / 3 / 255;
+% Compare disparity maps
+figure;
+imshow(disp_map/ max(max(disp_map)));
+title('Computed disparity map');
+
+%% LAB colorspace for depth map computation experiment:
+
+stereo_img_l = imread('Data/scene1.row3.col4.ppm');
+stereo_img_r = imread('Data/scene1.row3.col3.ppm');
+% stereo_img_l = sum(double(stereo_img_l), 3) / 3 / 255;
+% stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
+
+% Parameters
+min_disparity = 0;
+max_disparity = 16;
+window_size = 3;
+matching_cost = 'BILATERAL_COLOR';
 
 % Compute disparity map
 disp_map = stereo_computation( ...
@@ -416,7 +442,7 @@ disp_map = stereo_computation( ...
 );
 disp_map = lab2rgb(disp_map);
 disp_map = sum(double(disp_map), 3) / 3 / 255;
-% Compare disparity maps
+% Disparity maps
 figure;
 imshow(disp_map/ max(max(disp_map)));
 title('Computed disparity map');
