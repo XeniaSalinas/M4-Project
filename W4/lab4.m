@@ -107,7 +107,7 @@ t=U(:,end);
 % [Tx] --> SVD([Tx]) --> last column of V
 Tx_skew_symmetric = U * (- Z) * transpose(U);
 [~, ~, V_Tx] = svd(Tx_skew_symmetric);
-t_prima = V(:, end);
+t_prima = V_Tx(:, end);
 
 % The translation vectors must be equal (possibly with changed signs)
 display(t);
@@ -405,7 +405,7 @@ stereo_img_r = imread('Data/scene1.row3.col3.ppm');
 % Parameters
 min_disparity = 0;
 max_disparity = 16;
-window_size = 3;
+window_size = 20;
 matching_cost = 'BILATERAL';
 
 % Compute disparity map
@@ -431,7 +431,7 @@ stereo_img_r = imread('Data/scene1.row3.col3.ppm');
 % Parameters
 min_disparity = 0;
 max_disparity = 16;
-window_size = 3;
+window_size = 20;
 matching_cost = 'BILATERAL_COLOR';
 
 % Compute disparity map
