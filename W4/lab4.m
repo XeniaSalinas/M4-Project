@@ -368,10 +368,10 @@ stereo_img_l = sum(double(stereo_img_l), 3) / 3 / 255;
 stereo_img_r = sum(double(stereo_img_r), 3) / 3 / 255;
 
 % Parameters
-min_disparity = 0;
-max_disparity = 16;
+min_disparity = 15;
+max_disparity = 100;
 window_size = 3;
-matching_cost = 'SSD';
+matching_cost = 'NCC';
 
 % Compute disparity map
 disp_map = stereo_computation( ...
