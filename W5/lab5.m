@@ -169,7 +169,7 @@ x2(3,:) = x2(3,:)./x2(3,:);
 % and stop when (abs(d - d_old)/d) < 0.1 where d_old is the distance
 % in the previous iteration.
 
-[Pproj, Xproj] = factorization_method({x1, x2}, 'sturm');
+[Pproj, Xproj] = factorization_method({x1, x2}, 'ones');
 
 %% Check projected points (estimated and data points)
 
@@ -259,9 +259,9 @@ v3p = vanishing_point(x2(:,1),x2(:,2),x2(:,4),x2(:,3));
 
 % ToDo: use the vanishing points to compute the matrix Hp that 
 %       upgrades the projective reconstruction to an affine reconstruction
-p = [1 2 3];
+p = cross(v1p,cross(v2p,v3p));
 Hp = [eye(3) zeros(3,1);
-      p 1];
+      transpose(p) 1];
 
 
 %% check results
