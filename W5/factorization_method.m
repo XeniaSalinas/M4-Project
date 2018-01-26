@@ -18,10 +18,15 @@ function [Pproj, Xproj] = factorization_method(x)
         e{i} = V(:,3) / V(3,3); 
     end
     
-    for c = 1:num_cameras
-        for i=1:num_points
-            lambda(1,i) = (x{1}(:, i)' * F{c} * cross(e{c}, x{c}(:,i))) / (norm(cross(e{c}, x{c}(:,i))).^ 2 * lambda(1, i));
-        end
+    for j=1:size(x{1},2)
+        num = x{1}(:, j)' * F{1} * cross(e{1}, x{1}(:,j));
+        den = norm(cross(e{1}, x{1}(:,j))) .^ 2 * lambda(1, j);
+        lambda(1,j) = num / den;
+    end
+    for j=1:size(x{2},2)
+        num = x{1}(:, j)' * F{2} * cross(e{2}, x{2}(:,j));
+        den = norm(cross(e{2}, x{2}(:,j))) .^ 2 * lambda(1, j);
+        lambda(2,j) = num / den;
     end
     
     % Normalize input points
