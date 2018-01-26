@@ -93,7 +93,7 @@ plot_camera2(P1,w,h);
 plot_camera2(P2,w,h);
 for i = 1:length(X)
     scatter3(X(1,i), X(2,i), X(3,i), 5^2, [0.5 0.5 0.5], 'filled');
-end;
+end
 axis equal;
 axis vis3d;
 
@@ -169,7 +169,7 @@ x2(3,:) = x2(3,:)./x2(3,:);
 % and stop when (abs(d - d_old)/d) < 0.1 where d_old is the distance
 % in the previous iteration.
 
-[Pproj, Xproj] = factorization_method({x1, x2});
+[Pproj, Xproj] = factorization_method({x1, x2}, 'sturm');
 
 %% Check projected points (estimated and data points)
 
