@@ -1,4 +1,4 @@
-function [Pproj, Xproj] = factorization_method(x)
+function [Pproj, Xproj] = factorization_method(x, initialization)
 
     tol_d = 0.1;
     d = inf;
@@ -7,7 +7,7 @@ function [Pproj, Xproj] = factorization_method(x)
     num_points = size(x{1},2);
     
     % Initialize lambda
-    lambda = ones(num_cameras, num_points);
+    temp_lambda = ones(num_cameras, num_points);
     
     % 1. Normalize the image coordinates, by applying transformations Ti
     x_hat = cell(1,num_cameras);
@@ -15,44 +15,102 @@ function [Pproj, Xproj] = factorization_method(x)
     for i = 1:num_cameras
         [x_hat{i}, T{i}] = normalise2dpts(x{i});
     end
-    
-    % 2. Estimate the fundamental matrices and epipoles with the method of
-    % [Hartley, 1995]
-    F = cell(1, num_cameras);
-    e = cell(1, num_cameras);
-    for i = 1:num_cameras
-        F{i} = fundamental_matrix(x{i}, x{1});
-        [U, D, V] = svd(F{i});
-        e{i} = V(:,3) / V(3,3); 
-    end
-    
-    % 3. Determine the scale factors lambda_ip using equation (3) of [Sturm and Triggs, 1996]
-    for j=1:size(x{1},2)
-        num = x{1}(:, j)' * F{1} * cross(e{1}, x{1}(:,j));
-        den = norm(cross(e{1}, x{1}(:,j))) .^ 2 * lambda(1, j);
-        lambda(1,j) = num / den;
-    end
-    for j=1:size(x{2},2)
-        num = x{1}(:, j)' * F{2} * cross(e{2}, x{2}(:,j));
-        den = norm(cross(e{2}, x{2}(:,j))) .^ 2 * lambda(1, j);
-        lambda(2,j) = num / den;
-    end
-    
-    % 4. Build the rescaled measurement matrix W
-    
+    if isequal(initialization, 'sturm')
+        % 2. Estimate the fundamental matrices and epipoles with the method of
+        % [Hartley, 1995]
+        F = cell(1, num_cameras);
+        e = cell(1, num_cameras);
+        for i = 1:num_cameras
+            F{i} = fundamental_matrix(x{i}, x{1});
+            [U, D, V] = svd(F{i});
+            e{i} = V(:,3) / V(3,3); 
+        end
+
+        % 3. Determine the scale factors lambda_ip using equation (3) of [Sturm and Triggs, 1996]
+        for j=1:size(x{1},2)
+            num = x{1}(:, j)' * F{1} * cross(e{1}, x{1}(:,j));
+            den = norm(cross(e{1}, x{1}(:,j))) .^ 2 * temp_lambda(1, j);
+            temp_lambda(1,j) = num / den;
+        end
+        for j=1:size(x{2},2)
+            num = x{1}(:, j)' * F{2} * cross(e{2}, x{2}(:,j));
+            den = norm(cross(e{2}, x{2}(:,j))) .^ 2 * temp_lambda(1, j);
+            temp_lambda(2,j) = num / den;
+        end
+     end
+
+   
+    while(1)
+        temp_diff = Inf;
+        norm_row = false;
+    % 4. Find iteratively correct labmdas to build the rescaled measurement matrix W
+        while(1)
+            norm_row=~norm_row;
+            diff = temp_diff;
+            lambda = temp_lambda;
     % 5. Balance W by column-wise and "triplet-o-rows"-wise scalar
     % multiplications
-    
-    % 6. compute the SVD of the balanced matrix W
-    
-    % 7. From the SVD, recover projective motion and shape
-    
-    % 8. Adapt projective motion, to account for the normalization
-    % transformations Ti os step 1
-    
-    true = 1;
-    while(true)
+            if norm_row
+                
+                temp_lambda(1,:) = temp_lambda(1,:) ./ norm(temp_lambda(1,:));
+                temp_lambda(2,:) = temp_lambda(2,:) ./ norm(temp_lambda(2,:));
+            else
+                for col = 1:size(x{1},2)
+                    temp_lambda(:,col) = temp_lambda(:,col) / norm(temp_lambda(:,col));
+                end
+            end
+            temp_diff = (lambda - temp_lambda).^2;
+            temp_diff = sum(temp_diff(:));
+            temp_diff = sqrt(temp_diff);
+                        
+            if ((abs(temp_diff - diff)/temp_diff) < tol_d)
+                lambda = temp_lambda;
+                break;
+            end
 
-    end
+        end
+    % Build the rescaled measurement matrix W
+        W = zeros(3*2, size(x{1},2));
+        W(1,:) = lambda(1,:) .* x_hat{1}(1,:);
+        W(2,:) = lambda(1,:) .* x_hat{1}(2,:);
+        W(3,:) = lambda(1,:) .* x_hat{1}(3,:);
+        W(4,:) = lambda(2,:) .* x_hat{2}(1,:);
+        W(5,:) = lambda(2,:) .* x_hat{2}(2,:);
+        W(6,:) = lambda(2,:) .* x_hat{2}(3,:);
+     % 6. compute the SVD of the balanced matrix W
+        [U,D,V] = svd(W);
+    % 7. From the SVD, recover projective motion and shape
+        P_motion = U * D(:,1:4);
+        Xproj = V(:,1:4)';
+        
+        d_old = d;
+        d = 0;
+
+        %Compute distance from the real point to the 3D reconstructed point
+        Px = P_motion(1:3,:) * Xproj;
+        x_ = x_hat{1};
+        for j=1:size(x{1},2)
+             d = d + sum((x_(:,j) - Px(:,j)).^2);
+        end
+        Px = P_motion(4:6,:) * Xproj;
+        x_ = x_hat{2};
+        for j=1:size(x{1},2)
+             d = d + sum((x_(:,j) - Px(:,j)).^2);
+        end
+        
+        if ((abs(d - d_old)/d) < tol_d)
+            break;
+        else
+            %Update lambdas
+            temp = P_motion*Xproj;
+            temp_lambda(1,:) = temp(3,:);
+            temp_lambda(2,:) = temp(6,:);
+        end
+    end    
+    % 8. Adapt projective motion, to account for the normalization
+    % transformations Ti of step 1
+
+    Pproj(1:3,:) = T{1}\ P_motion(1:3,:);
+    Pproj(4:6,:) = T{2}\ P_motion(4:6,:);
 
 end
