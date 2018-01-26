@@ -3,7 +3,7 @@
 
 
 addpath('..\W4\sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
-
+addpath(genpath('vanishing_points'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 0. Create synthetic data
@@ -417,6 +417,10 @@ focal_ratio = 1;
 params.PRINT = 1;
 params.PLOT = 1;
 [horizon, VPs] = detect_vps(img_in, folder_out, manhattan, acceleration, focal_ratio, params);
+
+p = cross(v1p,cross(v2p,v3p));
+Hp = [eye(3) zeros(3,1);
+      transpose(p) 1];
 
 
 %% Visualize the result
