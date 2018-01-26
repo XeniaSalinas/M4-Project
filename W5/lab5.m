@@ -2,7 +2,7 @@
 %% Lab 5: Reconstruction from uncalibrated viewas
 
 
-addpath('sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
+addpath('..\W4\sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -259,6 +259,9 @@ v3p = vanishing_point(x2(:,1),x2(:,2),x2(:,4),x2(:,3));
 
 % ToDo: use the vanishing points to compute the matrix Hp that 
 %       upgrades the projective reconstruction to an affine reconstruction
+p = [1 2 3];
+Hp = [eye(3) zeros(3,1);
+      p 1];
 
 
 %% check results
@@ -313,6 +316,25 @@ axis equal
 v1 = vanishing_point(x1(:,2),x1(:,5),x1(:,3),x1(:,6));
 v2 = vanishing_point(x1(:,1),x1(:,2),x1(:,3),x1(:,4));
 v3 = vanishing_point(x1(:,1),x1(:,4),x1(:,2),x1(:,3));
+
+A = [v1(1)*v2(1) v1(1)*v2(2)+v1(2)*v2(1) v1(1)*v2(3)+v1(3)*v2(1) v1(2)*v2(2) v1(2)*v2(3)+v1(3)*v2(2) v1(3)*v2(3);
+     v1(1)*v3(1) v1(1)*v3(2)+v1(2)*v3(1) v1(1)*v3(3)+v1(3)*v3(1) v1(2)*v3(2) v1(2)*v3(3)+v1(3)*v3(2) v1(3)*v3(3);
+     v2(1)*v3(1) v2(1)*v3(2)+v2(2)*v3(1) v2(1)*v3(3)+v2(3)*v3(1) v2(2)*v3(2) v2(2)*v3(3)+v2(3)*v3(2) v2(3)*v3(3);
+     0 1 0 0 0 0;
+     1 0 0 -1 0 0];
+
+w_v = null(A);
+
+w = [w_v(1) w_v(2) w_v(3);
+     w_v(2) w_v(4) w_v(5);
+     w_v(3) w_v(5) w_v(6)];
+ 
+M = P1(1:3,1:3);
+A = chol(inv(transpose(M)*w*M));
+
+Ha = [M zeros(3,1);
+      zeros(1,3) 1];
+
 
 %% check results
 
