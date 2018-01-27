@@ -344,7 +344,8 @@ Pproj_aff = Pproj(1:3,:)*inv(Hp);
 M = Pproj_aff(:,1:3);
 %Check if the matrix is positive definite:
 all(eig(inv(M'*w*M)) > 0)
-A = chol(inv(M'*w*M));
+Ahat = nearestSPD(inv(M'*w*M));
+A = chol(Ahat);
 
 Ha = [inv(A) zeros(3,1);
       zeros(1,3) 1];
