@@ -169,7 +169,7 @@ x2(3,:) = x2(3,:)./x2(3,:);
 % and stop when (abs(d - d_old)/d) < 0.1 where d_old is the distance
 % in the previous iteration.
 
-[Pproj, Xproj] = factorization_method({x1, x2}, 'ones');
+[Pproj, Xproj] = factorization_method({x1, x2}, 'sturm');
 
 %% Check projected points (estimated and data points)
 
@@ -327,23 +327,24 @@ v1 = vanishing_point(x1(:,2),x1(:,5),x1(:,3),x1(:,6));
 v2 = vanishing_point(x1(:,1),x1(:,2),x1(:,3),x1(:,4));
 v3 = vanishing_point(x1(:,1),x1(:,4),x1(:,2),x1(:,3));
 
-A = [v1(1)*v2(1) v1(1)*v2(2)+v1(2)*v2(1) v1(1)*v2(3)+v1(3)*v2(1) v1(2)*v2(2) v1(2)*v2(3)+v1(3)*v2(2) v1(3)*v2(3);
-     v1(1)*v3(1) v1(1)*v3(2)+v1(2)*v3(1) v1(1)*v3(3)+v1(3)*v3(1) v1(2)*v3(2) v1(2)*v3(3)+v1(3)*v3(2) v1(3)*v3(3);
-     v2(1)*v3(1) v2(1)*v3(2)+v2(2)*v3(1) v2(1)*v3(3)+v2(3)*v3(1) v2(2)*v3(2) v2(2)*v3(3)+v2(3)*v3(2) v2(3)*v3(3);
-     0 1 0 0 0 0;
-     1 0 0 -1 0 0];
+A_w = [v1(1)*v2(1) v1(1)*v2(2) + v1(2)*v2(1) v1(1)*v2(3) + v1(3)*v2(1) v1(2)*v2(2) v1(2)*v2(3) + v1(3)*v2(2) v1(3)*v2(3);
+        v1(1)*v3(1) v1(1)*v3(2) + v1(2)*v3(1) v1(1)*v3(3) + v1(3)*v3(1) v1(2)*v3(2) v1(2)*v3(3) + v1(3)*v3(2) v1(3)*v3(3);
+        v2(1)*v3(1) v2(1)*v3(2) + v2(2)*v3(1) v2(1)*v3(3) + v2(3)*v3(1) v2(2)*v3(2) v2(2)*v3(3) + v2(3)*v3(2) v2(3)*v3(3);
+        0 1 0 0 0 0;
+        1 0 0 -1 0 0];
 
-[U,D,V] = svd(A);
-w_v = V(end,:);
+[U,D,V] = svd(A_w);
+w_v = V(:, end);
 
 w = [w_v(1) w_v(2) w_v(3);
      w_v(2) w_v(4) w_v(5);
      w_v(3) w_v(5) w_v(6)];
  
-M = P1(1:3,1:3);
-A = chol(inv(transpose(M)*w*M));
+Pproj_aff = Pproj(1:3,:)*inv(Hp);
+M = Pproj_aff(:,1:3);
+A = chol(inv(M'*w*M));
 
-Ha = [M zeros(3,1);
+Ha = [inv(A) zeros(3,1);
       zeros(1,3) 1];
 
 
