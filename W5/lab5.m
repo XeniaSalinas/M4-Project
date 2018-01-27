@@ -342,6 +342,8 @@ w = [w_v(1) w_v(2) w_v(3);
  
 Pproj_aff = Pproj(1:3,:)*inv(Hp);
 M = Pproj_aff(:,1:3);
+%Check if the matrix is positive definite:
+all(eig(inv(M'*w*M)) > 0)
 A = chol(inv(M'*w*M));
 
 Ha = [inv(A) zeros(3,1);
