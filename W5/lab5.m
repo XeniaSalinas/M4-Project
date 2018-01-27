@@ -259,9 +259,19 @@ v3p = vanishing_point(x2(:,1),x2(:,2),x2(:,4),x2(:,3));
 
 % ToDo: use the vanishing points to compute the matrix Hp that 
 %       upgrades the projective reconstruction to an affine reconstruction
-p = cross(v1p,cross(v2p,v3p));
+%Here we need to compute A so that Ap = 0. p is the point mapped to the
+%plane at infinity
+
+A = [...
+    triangulate(euclid(v1), euclid(v1p), Pproj(1:3,:), Pproj(4:6,:), [w,h])';
+    triangulate(euclid(v2), euclid(v2p), Pproj(1:3,:), Pproj(4:6,:), [w,h])';
+    triangulate(euclid(v3), euclid(v3p), Pproj(1:3,:), Pproj(4:6,:), [w,h])';...
+    ];
+
+p = null(A);
+p = p/p(end);
 Hp = [eye(3) zeros(3,1);
-      transpose(p) 1];
+      transpose(p)];
 
 
 %% check results
@@ -436,7 +446,7 @@ figure; hold on;
 [w,h] = size(I{1});
 for i = 1:length(Xe)
     scatter3(Xe(1,i), Xe(2,i), Xe(3,i), 2^2, [r(i) g(i) b(i)], 'filled');
-end;
+end
 axis equal;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
