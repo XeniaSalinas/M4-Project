@@ -262,17 +262,7 @@ v3p = vanishing_point(x2(:,1),x2(:,2),x2(:,4),x2(:,3));
 %Here we need to compute A so that Ap = 0. p is the point mapped to the
 %plane at infinity
 
-A = [...
-    triangulate(euclid(v1), euclid(v1p), Pproj(1:3,:), Pproj(4:6,:), [w,h])';
-    triangulate(euclid(v2), euclid(v2p), Pproj(1:3,:), Pproj(4:6,:), [w,h])';
-    triangulate(euclid(v3), euclid(v3p), Pproj(1:3,:), Pproj(4:6,:), [w,h])';...
-    ];
-
-p = null(A);
-p = p/p(end);
-Hp = [eye(3) zeros(3,1);
-      transpose(p)];
-
+Hp = affine_reconstruction_vp({v1, v2, v3}, {v1p, v2p, v3p}, Pproj(1:3,:), Pproj(4:6,:), w, h);
 
 %% check results
 
@@ -319,22 +309,23 @@ axis equal
 %% 3. Metric reconstruction (synthetic data)
 
 % ToDo: compute the matrix Ha that 
-%       upgrades the projective reconstruction to an affine reconstruction
+%       upgrades the affine reconstruction to a metric reconstruction
 % Use the following vanishing points given by three pair of orthogonal lines
 % and assume that the skew factor is zero and that pixels are square
 
-v1 = vanishing_point(x1(:,2),x1(:,5),x1(:,3),x1(:,6));
-v2 = vanishing_point(x1(:,1),x1(:,2),x1(:,3),x1(:,4));
-v3 = vanishing_point(x1(:,1),x1(:,4),x1(:,2),x1(:,3));
+u = vanishing_point(x1(:,2),x1(:,5),x1(:,3),x1(:,6));
+v = vanishing_point(x1(:,1),x1(:,2),x1(:,3),x1(:,4));
+z = vanishing_point(x1(:,1),x1(:,4),x1(:,2),x1(:,3));
 
-A_w = [v1(1)*v2(1) v1(1)*v2(2) + v1(2)*v2(1) v1(1)*v2(3) + v1(3)*v2(1) v1(2)*v2(2) v1(2)*v2(3) + v1(3)*v2(2) v1(3)*v2(3);
-        v1(1)*v3(1) v1(1)*v3(2) + v1(2)*v3(1) v1(1)*v3(3) + v1(3)*v3(1) v1(2)*v3(2) v1(2)*v3(3) + v1(3)*v3(2) v1(3)*v3(3);
-        v2(1)*v3(1) v2(1)*v3(2) + v2(2)*v3(1) v2(1)*v3(3) + v2(3)*v3(1) v2(2)*v3(2) v2(2)*v3(3) + v2(3)*v3(2) v2(3)*v3(3);
-        0 1 0 0 0 0;
-        1 0 0 -1 0 0];
+A_w = [...
+u(1)*v(1), u(1)*v(2)+u(2)*v(1), u(1)*v(3)+u(3)*v(1), u(2)*v(2), u(2)*v(3)+u(3)*v(2), u(3)*v(3); ...
+u(1)*z(1), u(1)*z(2)+u(2)*z(1), u(1)*z(3)+u(3)*z(1), u(2)*z(2), u(2)*z(3)+u(3)*z(2), u(3)*z(3); ...
+v(1)*z(1), v(1)*z(2)+v(2)*z(1), v(1)*z(3)+v(3)*z(1), v(2)*z(2), v(2)*z(3)+v(3)*z(2), v(3)*z(3); ...
+0 1 0 0 0 0; ...
+1 0 0 -1 0 0];
 
-[U,D,V] = svd(A_w);
-w_v = V(:, end);
+A_w_null = null(A_w);
+w_v = A_w_null(:,1);
 
 w = [w_v(1) w_v(2) w_v(3);
      w_v(2) w_v(4) w_v(5);
@@ -396,19 +387,54 @@ axis equal
 %% 4. Projective reconstruction (real data)
 
 %% read images
-Irgb{1} = double(imread('Data/0000_s.png'))/255;
-Irgb{2} = double(imread('Data/0001_s.png'))/255;
+Irgb{1} = double(imread('Data/0000_s.png'));
+Irgb{2} = double(imread('Data/0001_s.png'));
+I{1} = sum(double(Irgb{1}), 3) / 3 / 255;
+I{2} = sum(double(Irgb{2}), 3) / 3 / 255;
+[h,w] = size(I{1});
 
-I{1} = sum(Irgb{1}, 3) / 3; 
-I{2} = sum(Irgb{2}, 3) / 3;
+% Compute keypoints and matches.
+points = cell(2,1);
+descr = cell(2,1);
+for i = 1:2
+    [points{i}, descr{i}] = sift(I{i}, 'Threshold', 0.01);
+    points{i} = points{i}(1:2,:);
+end
 
-Ncam = length(I);
+matches = siftmatch(descr{1}, descr{2});
+x1m = [points{1}(:, matches(1, :)); ones(1, length(matches))];
+x2m = [points{2}(:, matches(2, :)); ones(1, length(matches))];
 
 % ToDo: compute a projective reconstruction using the factorization method
+[Pproj, Xm] = factorization_method({x1m, x2m}, 'sturm');
 
 % ToDo: show the data points (image correspondences) and the projected
 % points (of the reconstructed 3D points) in images 1 and 2. Reuse the code
 % in section 'Check projected points' (synthetic experiment).
+P1 = Pproj(1:3,:);
+P2 = Pproj(4:6,:);
+x1_hat = euclid(P1*Xm);
+x2_hat = euclid(P2*Xm);
+
+% Plot projected points and matches in image 1
+figure;
+imshow(I{1});
+hold on;
+plot(x1m(1,:),x1m(2,:), 'ob', 'DisplayName', 'Matches');
+plot(x1_hat(1,:),x1_hat(2,:), 'xr', 'DisplayName', 'Projected points');
+hold off;
+legend();
+title('Image 1');
+
+% Plot projected points and matches in image 2
+figure;
+imshow(I{2});
+hold on;
+plot(x2m(1,:),x2m(2,:), 'ob', 'DisplayName', 'Matches');
+plot(x2_hat(1,:),x2_hat(2,:), 'xr', 'DisplayName', 'Projected points');
+hold off;
+legend();
+title('Image 2');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. Affine reconstruction (real data)
@@ -423,28 +449,48 @@ Ncam = length(I);
 % This is an example on how to obtain the vanishing points (VPs) from three
 % orthogonal lines in image 1
 
-img_in =  'Data/0000_s.png'; % input image
-folder_out = '.'; % output folder
+% img_in =  'Data/0000_s.png'; % input image
+% folder_out = './results/detect_vps_artifacts'; % output folder
+% manhattan = 1;
+% acceleration = 0;
+% focal_ratio = 1;
+% params.PRINT = 1;
+% params.PLOT = 1;
+% [horizon, VPs] = detect_vps(img_in, folder_out, manhattan, acceleration, focal_ratio, params);
+
+% Fixed parameters
+folder_out = './results/detect_vps_artifacts'; % output folder
 manhattan = 1;
 acceleration = 0;
 focal_ratio = 1;
 params.PRINT = 1;
 params.PLOT = 1;
-[horizon, VPs] = detect_vps(img_in, folder_out, manhattan, acceleration, focal_ratio, params);
+% Vanishing points - image 1
+[~, VPs_1] = detect_vps('Data/0000_s.png', folder_out, manhattan, acceleration, focal_ratio, params);
+VPs_1 = [VPs_1; ones(1, length(VPs_1))];
+v1 = VPs_1(:,1);
+v2 = VPs_1(:,2);
+v3 = VPs_1(:,3);
+% Vanishing points - image 2
+[~, VPs_2] = detect_vps('Data/0001_s.png', folder_out, manhattan, acceleration, focal_ratio, params);
+VPs_2 = [VPs_2; ones(1, length(VPs_2))];
+v1p = VPs_2(:,1);
+v2p = VPs_2(:,2);
+v3p = VPs_2(:,3);
 
-p = cross(v1p,cross(v2p,v3p));
-Hp = [eye(3) zeros(3,1);
-      transpose(p) 1];
-
+Hp = affine_reconstruction_vp({v1, v2, v3}, {v1p, v2p, v3p}, P1, P2, w, h);
 
 %% Visualize the result
+
+% FIXME: either visualization or previous computations are (probably)
+% wrong, review this and fix it.
 
 % x1m are the data points in image 1
 % Xm are the reconstructed 3D points (projective reconstruction)
 
-r = interp2(double(Irgb{1}(:,:,1)), x1m(1,:), x1m(2,:));
-g = interp2(double(Irgb{1}(:,:,2)), x1m(1,:), x1m(2,:));
-b = interp2(double(Irgb{1}(:,:,3)), x1m(1,:), x1m(2,:));
+r = interp2(double(Irgb{1}(:,:,1)), x1m(1,:), x1m(2,:))/255;
+g = interp2(double(Irgb{1}(:,:,2)), x1m(1,:), x1m(2,:))/255;
+b = interp2(double(Irgb{1}(:,:,3)), x1m(1,:), x1m(2,:))/255;
 Xe = euclid(Hp*Xm);
 figure; hold on;
 [w,h] = size(I{1});
