@@ -169,7 +169,8 @@ x2(3,:) = x2(3,:)./x2(3,:);
 % and stop when (abs(d - d_old)/d) < 0.1 where d_old is the distance
 % in the previous iteration.
 
-[Pproj, Xproj] = factorization_method({x1, x2}, 'sturm');
+[Pproj, Xproj, reproj_error] = factorization_method({x1, x2}, 'sturm');
+fprintf('Reprojection error: %f\n', reproj_error);
 
 %% Check projected points (estimated and data points)
 
@@ -336,12 +337,13 @@ w = [w_v(1) w_v(2) w_v(3);
      w_v(2) w_v(4) w_v(5);
      w_v(3) w_v(5) w_v(6)];
  
-Pproj_aff = Pproj(1:3,:)*inv(Hp);
+Pproj_aff = Pproj(1:3,:) / Hp;
 M = Pproj_aff(:,1:3);
+AAT = abs(inv(M'*w*M));
 %Check if the matrix is positive definite:
-all(eig(inv(M'*w*M)) > 0)
-Ahat = nearestSPD(inv(M'*w*M));
-A = chol(Ahat);
+all(eig(AAT) > 0)
+% Ahat = nearestSPD(AAT);
+A = chol(AAT);
 
 Ha = [inv(A) zeros(3,1);
       zeros(1,3) 1];

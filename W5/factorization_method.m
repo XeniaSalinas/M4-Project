@@ -1,4 +1,4 @@
-function [Pproj, Xproj] = factorization_method(x, initialization)
+function [Pproj, Xproj, reproj_err] = factorization_method(x, initialization)
 % TODO: Extend this function to use more than 2 cameras. Now it assumes 2
 % cameras are passed.
 
@@ -45,28 +45,25 @@ if isequal(initialization, 'sturm')
 
 while(1)
     temp_diff = Inf;
-    norm_row = false;
     % 4. Find iteratively correct labmdas to build the rescaled measurement matrix W
     while(1)
-        norm_row=~norm_row;
         diff = temp_diff;
         lambda = temp_lambda;
+        
         % 5. Balance W by column-wise and "triplet-o-rows"-wise scalar
         % multiplications
-        if norm_row
-
-            temp_lambda(1,:) = temp_lambda(1,:) ./ norm(temp_lambda(1,:));
-            temp_lambda(2,:) = temp_lambda(2,:) ./ norm(temp_lambda(2,:));
-        else
-            for col = 1:size(x{1},2)
-                temp_lambda(:,col) = temp_lambda(:,col) / norm(temp_lambda(:,col));
-            end
+        
+        temp_lambda(1,:) = temp_lambda(1,:) ./ norm(temp_lambda(1,:));
+        temp_lambda(2,:) = temp_lambda(2,:) ./ norm(temp_lambda(2,:));
+        for col = 1:size(x{1},2)
+            temp_lambda(:,col) = temp_lambda(:,col) / norm(temp_lambda(:,col));
         end
+        
         temp_diff = (lambda - temp_lambda).^2;
         temp_diff = sum(temp_diff(:));
         temp_diff = sqrt(temp_diff);
 
-        if ((abs(temp_diff - diff)/temp_diff) < tol_d)
+        if temp_diff == 0 || ((abs(temp_diff - diff)/temp_diff) < tol_d)
             lambda = temp_lambda;
             break;
         end
@@ -116,5 +113,6 @@ end
 % transformations Ti of step 1
 Pproj(1:3,:) = T{1}\ P_motion(1:3,:);
 Pproj(4:6,:) = T{2}\ P_motion(4:6,:);
+reproj_err = d; % Reprojection error
 
 end
