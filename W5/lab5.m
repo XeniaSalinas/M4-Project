@@ -339,10 +339,10 @@ w = [w_v(1) w_v(2) w_v(3);
  
 Pproj_aff = Pproj(1:3,:) / Hp;
 M = Pproj_aff(:,1:3);
-AAT = abs(inv(M'*w*M));
+AAT = inv(M'*w*M);
 %Check if the matrix is positive definite:
 all(eig(AAT) > 0)
-% Ahat = nearestSPD(AAT);
+Ahat = nearestSPD(AAT);
 A = chol(AAT);
 
 Ha = [inv(A) zeros(3,1);
