@@ -200,6 +200,7 @@ Xaux(3,:) = Xproj(3,:)./Xproj(4,:);
 X=Xaux;
 
 figure;
+title('Projective reconstruction');
 hold on;
 X1 = X(:,1); X2 = X(:,2); X3 = X(:,3); X4 = X(:,4);
 plot3([X1(1) X2(1)], [X1(2) X2(2)], [X1(3) X2(3)]);
@@ -268,6 +269,7 @@ Hp = affine_reconstruction_vp({v1, v2, v3}, {v1p, v2p, v3p}, Pproj(1:3,:), Pproj
 
 Xa = euclid(Hp*Xproj);
 figure;
+title('Affine reconstruction');
 hold on;
 X1 = Xa(:,1); X2 = Xa(:,2); X3 = Xa(:,3); X4 = Xa(:,4);
 plot3([X1(1) X2(1)], [X1(2) X2(2)], [X1(3) X2(3)]);
@@ -324,8 +326,11 @@ v(1)*z(1), v(1)*z(2)+v(2)*z(1), v(1)*z(3)+v(3)*z(1), v(2)*z(2), v(2)*z(3)+v(3)*z
 0 1 0 0 0 0; ...
 1 0 0 -1 0 0];
 
-A_w_null = null(A_w);
-w_v = A_w_null(:,1);
+% A_w_null = null(A_w);
+% w_v = A_w_null(:,1);
+
+[U, D, V] = svd(A_w);
+w_v = V(:,end);
 
 w = [w_v(1) w_v(2) w_v(3);
      w_v(2) w_v(4) w_v(5);
