@@ -81,11 +81,9 @@ while(1)
     W(5,:) = lambda(2,:) .* x_hat{2}(2,:);
     W(6,:) = lambda(2,:) .* x_hat{2}(3,:);
     % 6. compute the SVD of the balanced matrix W
-    [U,D,V] = svd(W);
-    sigma = sqrt(D(1:4,1:4));
-    % 7. From the SVD, recover projective motion and shape
-    P_motion = U(:,1:4) * sigma;
-    Xproj = sigma * V(:,1:4)';
+    [U,D,V]=svd(W);
+    Xproj=V(:,1:4)';
+    P_motion=U*D(:,1:4);
 
     d_old = d;
     d = 0;

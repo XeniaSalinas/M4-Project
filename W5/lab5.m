@@ -327,7 +327,7 @@ v(1)*z(1), v(1)*z(2)+v(2)*z(1), v(1)*z(3)+v(3)*z(1), v(2)*z(2), v(2)*z(3)+v(3)*z
 1 0 0 -1 0 0];
 
 A_w_null = null(A_w);
-w_v = A_w_null(:,2);
+w_v = A_w_null(:,1);
 
 % [U, D, V] = svd(A_w);
 % w_v = V(:,end);
@@ -339,8 +339,9 @@ w = [w_v(1) w_v(2) w_v(3);
 Pproj_aff = Pproj(1:3,:)*inv(Hp);
 M = Pproj_aff(:,1:3);
 %Check if the matrix is positive definite:
-all(eig(inv(M'*w*M)) > 0)
-Ahat = nearestSPD(inv(M'*w*M));
+% all(eig(inv(M'*w*M)) > 0)
+% Ahat = nearestSPD(inv(M'*w*M));
+Ahat=abs(inv(M'*w*M));
 A = chol(Ahat);
 
 Ha = [inv(A) zeros(3,1);
