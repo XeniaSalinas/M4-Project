@@ -3,3 +3,5 @@
 
 # Temporal MATLAB files
 *.asv
+
+W5/results/detect_vps_artifacts/*
