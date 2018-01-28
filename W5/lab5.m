@@ -326,11 +326,11 @@ v(1)*z(1), v(1)*z(2)+v(2)*z(1), v(1)*z(3)+v(3)*z(1), v(2)*z(2), v(2)*z(3)+v(3)*z
 0 1 0 0 0 0; ...
 1 0 0 -1 0 0];
 
-% A_w_null = null(A_w);
-% w_v = A_w_null(:,1);
+A_w_null = null(A_w);
+w_v = A_w_null(:,2);
 
-[U, D, V] = svd(A_w);
-w_v = V(:,end);
+% [U, D, V] = svd(A_w);
+% w_v = V(:,end);
 
 w = [w_v(1) w_v(2) w_v(3);
      w_v(2) w_v(4) w_v(5);
@@ -407,11 +407,28 @@ for i = 1:2
 end
 
 matches = siftmatch(descr{1}, descr{2});
-x1m = [points{1}(:, matches(1, :)); ones(1, length(matches))];
-x2m = [points{2}(:, matches(2, :)); ones(1, length(matches))];
+% x1m = [points{1}(:, matches(1, :)); ones(1, length(matches))];
+% x2m = [points{2}(:, matches(2, :)); ones(1, length(matches))];
+
+x1m = [points{1}(:, matches(1, :))];
+x2m = [points{2}(:, matches(2, :))];
+
+
+[F, inliers] = ransac_fundamental_matrix(homog(x1m), homog(x2m), 2);
+
+% Plot inliers.
+inlier_matches = matches(:, inliers);
+figure;
+plotmatches(I{1}, I{2}, points{1}, points{2}, inlier_matches, 'Stacking', 'v');
+
+x1 = points{1}(:, inlier_matches(1, :));
+x2 = points{2}(:, inlier_matches(2, :));
+
+x1 = homog(x1);
+x2 = homog(x2);
 
 % ToDo: compute a projective reconstruction using the factorization method
-[Pproj, Xm] = factorization_method({x1m, x2m}, 'sturm');
+[Pproj, Xm] = factorization_method({x1, x2}, 'sturm');
 
 % ToDo: show the data points (image correspondences) and the projected
 % points (of the reconstructed 3D points) in images 1 and 2. Reuse the code
