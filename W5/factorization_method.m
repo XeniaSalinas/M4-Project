@@ -41,7 +41,7 @@ if isequal(initialization, 'sturm')
        temp_lambda(i,:) = (num ./ den) .* temp_lambda(i-1, :);
     end
  end
-
+count = 1;
 
 while(1)
     temp_diff = Inf;
@@ -90,18 +90,18 @@ while(1)
     d = 0;
 
     %Compute distance from the real point to the 3D reconstructed point
-    Px = P_motion(1:3,:) * Xproj;
-    x_ = x_hat{1};
+    Px1 = P_motion(1:3,:) * Xproj;
+    Px1 = Px1./Px1(end,:);
+    x_1 = x_hat{1};
+    Px2 = P_motion(4:6,:) * Xproj;
+    Px2 = Px2./Px2(end,:);
+    x_2 = x_hat{2};
     for j=1:size(x{1},2)
-         d = d + sum((x_(:,j) - Px(:,j)).^2);
-    end
-    Px = P_motion(4:6,:) * Xproj;
-    x_ = x_hat{2};
-    for j=1:size(x{1},2)
-         d = d + sum((x_(:,j) - Px(:,j)).^2);
+         d = d + sum((x_1(:,j) - Px1(:,j)).^2)+ sum((x_2(:,j) - Px2(:,j)).^2);
     end
 
     if ((abs(d - d_old)/d) < tol_d)
+        count
         break;
     else
         %Update lambdas
@@ -109,6 +109,7 @@ while(1)
         temp_lambda(1,:) = temp(3,:);
         temp_lambda(2,:) = temp(6,:);
     end
+    count=count+1;
 end
 
 % 8. Adapt projective motion, to account for the normalization
@@ -116,9 +117,5 @@ end
 Pproj(1:3,:) = T{1}\ P_motion(1:3,:);
 Pproj(4:6,:) = T{2}\ P_motion(4:6,:);
 reproj_err = d; % Reprojection error
-% Xproj(1,:) = Xproj(1,:)/Xproj(4,:);
-% Xproj(2,:) = Xproj(2,:)/Xproj(4,:);
-% Xproj(3,:) = Xproj(3,:)/Xproj(4,:);
-% Xproj(4,:) = Xproj(4,:)/Xproj(4,:);
 
 end
