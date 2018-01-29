@@ -27,7 +27,7 @@ if isequal(initialization, 'sturm')
     F = cell(1, num_cameras);
     e = cell(1, num_cameras);
     for i = 2:num_cameras
-        F{i} = ransac_fundamental_matrix(x{i}, x{i-1}, 2.0);
+        F{i} = ransac_fundamental_matrix(x_hat{i}, x_hat{i-1}, 2.0);
         [~, ~, V] = svd(F{i});
         e{i} = V(:,3) / V(3,3); 
     end
@@ -35,8 +35,8 @@ if isequal(initialization, 'sturm')
     % 3. Determine the scale factors lambda_ip using equation (3) of [Sturm and Triggs, 1996]
     for i=2:num_cameras
        e_rep = repmat(e{i}, 1, num_points);
-       xprod = cross(e_rep, x{i});
-       num = diag((x{i-1}' * F{i}) * xprod)';
+       xprod = cross(e_rep, x_hat{i});
+       num = diag((x_hat{i-1}' * F{i}) * xprod)';
        den = sum(xprod.^2, 1);
        temp_lambda(i,:) = (num ./ den) .* temp_lambda(i-1, :);
     end
@@ -45,18 +45,22 @@ if isequal(initialization, 'sturm')
 
 while(1)
     temp_diff = Inf;
+    norm_row = false;
     % 4. Find iteratively correct labmdas to build the rescaled measurement matrix W
     while(1)
+        norm_row =~norm_row;
         diff = temp_diff;
         lambda = temp_lambda;
         
         % 5. Balance W by column-wise and "triplet-o-rows"-wise scalar
         % multiplications
-        
-        temp_lambda(1,:) = temp_lambda(1,:) ./ norm(temp_lambda(1,:));
-        temp_lambda(2,:) = temp_lambda(2,:) ./ norm(temp_lambda(2,:));
-        for col = 1:size(x{1},2)
-            temp_lambda(:,col) = temp_lambda(:,col) / norm(temp_lambda(:,col));
+        if norm_row
+            temp_lambda(1,:) = temp_lambda(1,:) ./ norm(temp_lambda(1,:));
+            temp_lambda(2,:) = temp_lambda(2,:) ./ norm(temp_lambda(2,:));
+        else
+            for col = 1:size(x{1},2)
+                temp_lambda(:,col) = temp_lambda(:,col) / norm(temp_lambda(:,col));
+            end
         end
         
         temp_diff = (lambda - temp_lambda).^2;
