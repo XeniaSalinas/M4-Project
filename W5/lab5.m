@@ -342,9 +342,10 @@ M = Pproj_aff(:,1:3);
 
 %Check if the matrix is positive definite:
 % all(eig(inv(M'*w*M)) > 0)
-% Ahat = nearestSPD(inv(M'*w*M));
-Ahat=abs(inv(M'*w*M));
-A = chol(Ahat);
+% AAT = nearestSPD(inv(M'*w*M));
+AAT=abs(inv(M'*w*M));
+% AAT = inv(M'*w*M);
+A = chol(AAT);
 
 Ha = [inv(A) zeros(3,1);
       zeros(1,3) 1];
@@ -518,7 +519,6 @@ g = interp2(double(Irgb{1}(:,:,2)), x1m(1,:), x1m(2,:))/255;
 b = interp2(double(Irgb{1}(:,:,3)), x1m(1,:), x1m(2,:))/255;
 Xe = euclid(Hp*Xm);
 figure; hold on;
-[w,h] = size(I{1});
 for i = 1:length(Xe)
     scatter3(Xe(1,i), Xe(2,i), Xe(3,i), 2^2, [r(i) g(i) b(i)], 'filled');
 end
@@ -529,12 +529,9 @@ axis equal;
 
 % ToDo: compute the matrix Ha that updates the affine reconstruction
 % to a metric one and visualize the result in 3D as in the previous section
-
-[~, VPs_1] = detect_vps('Data/0000_s.png', folder_out, manhattan, acceleration, focal_ratio, params);
-VPs_1 = [VPs_1; ones(1, length(VPs_1))];
-u = VPs_1(:,1);
-v = VPs_1(:,2);
-z = VPs_1(:,3);
+u = v1;
+v = v2;
+z = v3;
 
 A_w = [...
 u(1)*v(1), u(1)*v(2)+u(2)*v(1), u(1)*v(3)+u(3)*v(1), u(2)*v(2), u(2)*v(3)+u(3)*v(2), u(3)*v(3); ...
@@ -559,7 +556,7 @@ M = Pproj_aff(:,1:3);
 %Check if the matrix is positive definite:
 % all(eig(inv(M'*w*M)) > 0)
 % Ahat = nearestSPD(inv(M'*w*M));
-Ahat=abs(inv(M'*w*M));
+Ahat=inv(M'*w*M);
 A = chol(Ahat);
 
 Ha = [inv(A) zeros(3,1);
@@ -568,44 +565,12 @@ Ha = [inv(A) zeros(3,1);
 
 %% check results
 
-Xa = euclid(Ha*Hp*Xproj);
-figure;
-hold on;
-X1 = Xa(:,1); X2 = Xa(:,2); X3 = Xa(:,3); X4 = Xa(:,4);
-plot3([X1(1) X2(1)], [X1(2) X2(2)], [X1(3) X2(3)]);
-plot3([X3(1) X4(1)], [X3(2) X4(2)], [X3(3) X4(3)]);
-X5 = Xa(:,5); X6 = Xa(:,6); X7 = X2; X8 = X3;
-plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
-plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
-plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
-plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
-X5 = Xa(:,7); X6 = Xa(:,8); X7 = X1; X8 = X4;
-plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
-plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
-plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
-plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
-X5 = Xa(:,9); X6 = Xa(:,10); X7 = Xa(:,11); X8 = Xa(:,12);
-plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
-plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
-plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
-plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
-X5 = Xa(:,13); X6 = Xa(:,14); X7 = Xa(:,15); X8 = Xa(:,16);
-plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
-plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
-plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
-plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
-X5 = Xa(:,17); X6 = Xa(:,18); X7 = Xa(:,19); X8 = Xa(:,20);
-plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
-plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
-plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
-plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
-X5 = Xa(:,21); X6 = Xa(:,22); X7 = Xa(:,23); X8 = Xa(:,24);
-plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
-plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
-plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
-plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
-axis vis3d
-axis equal
+Xa = euclid(Ha*Hp*Xm);
+figure; hold on;
+for i = 1:length(Xe)
+    scatter3(Xa(1,i), Xa(2,i), Xa(3,i), 2^2, [r(i) g(i) b(i)], 'filled');
+end
+axis equal;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
