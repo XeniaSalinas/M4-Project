@@ -117,5 +117,9 @@ end
 Pproj(1:3,:) = T{1}\ P_motion(1:3,:);
 Pproj(4:6,:) = T{2}\ P_motion(4:6,:);
 reproj_err = d; % Reprojection error
+% Xproj(1,:) = Xproj(1,:)./Xproj(4,:);
+% Xproj(2,:) = Xproj(2,:)./Xproj(4,:);
+% Xproj(3,:) = Xproj(3,:)./Xproj(4,:);
+% Xproj(4,:) = Xproj(4,:)./Xproj(4,:);
 
 end
