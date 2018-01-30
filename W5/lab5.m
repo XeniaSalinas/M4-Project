@@ -520,7 +520,7 @@ b = interp2(double(Irgb{1}(:,:,3)), x1m(1,:), x1m(2,:))/255;
 Xe = euclid(Hp*Xm);
 figure; hold on;
 for i = 1:length(Xe)
-    scatter3(Xe(1,i), Xe(2,i), Xe(3,i), 2^2, [r(i) g(i) b(i)], 'filled');
+    scatter3(Xe(1,i), Xe(2,i), Xe(3,i), 16, [r(i) g(i) b(i)], 'filled');
 end
 axis equal;
 
@@ -568,7 +568,7 @@ Ha = [inv(A) zeros(3,1);
 Xa = euclid(Ha*Hp*Xm);
 figure; hold on;
 for i = 1:length(Xe)
-    scatter3(Xa(1,i), Xa(2,i), Xa(3,i), 2^2, [r(i) g(i) b(i)], 'filled');
+    scatter3(Xa(1,i), Xa(2,i), Xa(3,i), 16, [r(i) g(i) b(i)], 'filled');
 end
 axis equal;
 
