@@ -73,16 +73,16 @@ while(1)
         end
 
     end
-    % Build the rescaled measurement matrix W
-    W = zeros(3*2, size(x{1},2));
-    W(1,:) = lambda(1,:) .* x_hat{1}(1,:);
-    W(2,:) = lambda(1,:) .* x_hat{1}(2,:);
-    W(3,:) = lambda(1,:) .* x_hat{1}(3,:);
-    W(4,:) = lambda(2,:) .* x_hat{2}(1,:);
-    W(5,:) = lambda(2,:) .* x_hat{2}(2,:);
-    W(6,:) = lambda(2,:) .* x_hat{2}(3,:);
-    % 6. compute the SVD of the balanced matrix W
-    [U,D,V]=svd(W);
+    % Build the rescaled measurement matrix M
+    M = zeros(3*2, size(x{1},2));
+    M(1,:) = lambda(1,:) .* x_hat{1}(1,:);
+    M(2,:) = lambda(1,:) .* x_hat{1}(2,:);
+    M(3,:) = lambda(1,:) .* x_hat{1}(3,:);
+    M(4,:) = lambda(2,:) .* x_hat{2}(1,:);
+    M(5,:) = lambda(2,:) .* x_hat{2}(2,:);
+    M(6,:) = lambda(2,:) .* x_hat{2}(3,:);
+    % 6. compute the SVD of the balanced matrix M
+    [U,D,V]=svd(M);
     Xproj=V(:,1:4)';
     P_motion=U*D(:,1:4);
 
