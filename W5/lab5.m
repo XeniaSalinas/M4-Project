@@ -432,7 +432,8 @@ x1 = homog(x1);
 x2 = homog(x2);
 
 % ToDo: compute a projective reconstruction using the factorization method
-[Pproj, Xm] = factorization_method({x1, x2}, 'sturm');
+[Pproj, Xm, reproj_error] = factorization_method({x1, x2}, 'sturm');
+fprintf('Reprojection error: %f\n', reproj_error);
 
 % ToDo: show the data points (image correspondences) and the projected
 % points (of the reconstructed 3D points) in images 1 and 2. Reuse the code
@@ -461,6 +462,17 @@ plot(x2_hat(1,:),x2_hat(2,:), 'xr', 'DisplayName', 'Projected points');
 hold off;
 legend();
 title('Image 2');
+
+%% visualize projective reconstruction
+r = interp2(double(Irgb{1}(:,:,1)), x1m(1,:), x1m(2,:))/255;
+g = interp2(double(Irgb{1}(:,:,2)), x1m(1,:), x1m(2,:))/255;
+b = interp2(double(Irgb{1}(:,:,3)), x1m(1,:), x1m(2,:))/255;
+Xp = euclid(Xm);
+figure; hold on;
+for i = 1:length(Xp)
+    scatter3(Xp(1,i), Xp(2,i), Xp(3,i), 16, [r(i) g(i) b(i)], 'filled');
+end
+axis equal;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. Affine reconstruction (real data)
