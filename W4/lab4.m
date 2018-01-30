@@ -461,17 +461,11 @@ title('Computed disparity map');
 % Compute disparity map of ground-truth
 stereo_img_l = imread('Data/scene1.row3.col4.ppm');
 stereo_img_r = imread('Data/scene1.row3.col3.ppm');
-% Resize images to speed-up processing, this part is just to show how 
-% graphical models can help regularize disparity maps for depth
-% computation.
-stereo_img_l = imresize(stereo_img_l, 0.8);
-stereo_img_r = imresize(stereo_img_r, 0.8);
-
 % Parameters
 min_disparity = 0;
 max_disparity = 16;
 window_size = 5;
-matching_cost = 'BILATERAL';
+matching_cost = 'SSD';
 
 % Compute disparity map
 disp_map = stereo_computation( ...
@@ -480,31 +474,36 @@ disp_map = stereo_computation( ...
     window_size, matching_cost ...
 );
 
-
-%% Belief propagation
-% We use the computed disparity map as unary potentials
+% We will use the computed disparity map as unary potentials
 figure;
 imshow(disp_map/ max(max(disp_map)));
 title('Unary potentials');
 
+
+%% Belief propagation
+
 % Create graphical model
-smooth_term=[0 2];   % Potts Model
-K = 17;  % possible values of posterior distribution, same as max_disparity+1
+smooth_term=[0 10];   % Potts Model
+K = 17;  % possible values of posterior distribution, maximum value found in disparity map
 [m,n,c] = size(stereo_img_l);
 [edgePot,edgeStruct] = CreateGridUGMModel(m, n, K, smooth_term);
-% edgeStruct.useMex = 0;
 
-tic;
-nodePot_values = reshape(disp_map, [1, m*n]);
-[~, loc] = ismember(nodePot_values, unique(nodePot_values));
-nodePot = full(transpose(ind2vec(loc)));
-decodeLBP = UGM_Decode_LBP(nodePot,edgePot,edgeStruct);
-toc;
+if ~isempty(edgePot)
+    tic;
+    nodePot_values = reshape(disp_map, [1, m*n]);
+    [~, loc] = ismember(nodePot_values, unique(nodePot_values));
+    nodePot = full(transpose(ind2vec(loc)));
+    decodeLBP = UGM_Infer_LBP(nodePot,edgePot,edgeStruct);
+    toc;
 
-disp_map_gm = reshape(decodeLBP-1, [m, n]);
-figure;
-imshow(disp_map_gm/ max(max(disp_map_gm)));
-title('Disparity map (posterior)');
+    disp_map_gm = reshape(decodeLBP-1, [m, n]);
+    figure;
+    imshow(disp_map_gm/ max(max(disp_map_gm)));
+    title('Disparity map (posterior)');
+else
+    error('You have to implement the CreateGridUGMModel.m function');
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% OPTIONAL:  Depth computation with Plane Sweeping
